@@ -30,6 +30,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.MapFragment;
@@ -89,6 +90,16 @@ OnConnectionFailedListener, LocationListener, Observer {
 		mMap.setMyLocationEnabled(true);
 		
 		mMap.setOnMyLocationButtonClickListener((OnMyLocationButtonClickListener)this);
+		mMap.setOnMapLoadedCallback(new OnMapLoadedCallback()
+		{
+			@Override
+			public void onMapLoaded() {
+				Log.i(TAG, "Map loaded");
+				/*if (!mLocationClient.isConnected())
+					mLocationClient.connect();
+					*/	
+			}
+		});
 		
         // position the camera over london bridge
 		LatLng londonBridge = new LatLng(LAT, LNG);
@@ -111,7 +122,9 @@ OnConnectionFailedListener, LocationListener, Observer {
         {
         	ObservingService.getInstance().addObserver(s, this);
         }
-		mLocationClient.connect();	
+		
+		if (!mLocationClient.isConnected() && !mLocationClient.isConnecting())
+			mLocationClient.connect();	
 	}
 	
 	@Override
@@ -134,7 +147,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	@Override
 	protected void onPause()
 	{
-		mSharedPrefEditor.putBoolean("KEY_UPDATES_REQUESTED", mUpdatesRequested);
+		mSharedPrefEditor.putBoolean(KEY_UPDATES_ON, mUpdatesRequested);
 		mSharedPrefEditor.commit();
 		super.onPause();
 	}
@@ -148,7 +161,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         } 
 		else 
         {
-            mSharedPrefEditor.putBoolean(KEY_UPDATES_ON, false);
+            mSharedPrefEditor.putBoolean(KEY_UPDATES_ON, true);
             mSharedPrefEditor.commit();
         }
 		
@@ -245,11 +258,9 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	@Override
 	public boolean onMyLocationButtonClick() {
-		Log.i(TAG, "onMyLocationButtonCLick()");
-		
 		Location loc = mLocationClient.getLastLocation();
-		Log.i(TAG, Double.toString(loc.getLatitude()));
-		Log.i(TAG, Double.toString(loc.getLongitude()));
+		//Log.i(TAG, Double.toString(loc.getLatitude()));
+		//Log.i(TAG, Double.toString(loc.getLongitude()));
 		getCrimeData(new LatLng(loc.getLatitude(), loc.getLongitude()));
 		return false;
 	}
@@ -263,8 +274,9 @@ OnConnectionFailedListener, LocationListener, Observer {
 	@Override
 	public void onConnected(Bundle bundle) {
 		Toast.makeText(this, "Connected to location service", Toast.LENGTH_SHORT).show();
-		Log.i(TAG, "Connected to service");
-		if (mUpdatesRequested) 
+		Log.i(TAG, "Connected to service, " + Boolean.toString(mUpdatesRequested));
+		
+		//if (mUpdatesRequested) 
 		{
             mLocationClient.requestLocationUpdates(mLocationRequest, this);
         }
@@ -278,7 +290,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 	@Override
 	public void onLocationChanged(Location loc) {
-		Log.d(TAG, "LocationUpdated!");
+		//Log.d(TAG, "LocationUpdated!");
 	}
 
 	@Override
