@@ -118,6 +118,9 @@ OnConnectionFailedListener, LocationListener, Observer {
 	protected void onStart()
 	{
 		super.onStart();
+		mSharedPrefEditor.putBoolean(KEY_UPDATES_ON, mUpdatesRequested);
+		mSharedPrefEditor.commit();
+		
 		for (String s : notifications)
         {
         	ObservingService.getInstance().addObserver(s, this);
@@ -259,8 +262,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 	@Override
 	public boolean onMyLocationButtonClick() {
 		Location loc = mLocationClient.getLastLocation();
-		//Log.i(TAG, Double.toString(loc.getLatitude()));
-		//Log.i(TAG, Double.toString(loc.getLongitude()));
 		getCrimeData(new LatLng(loc.getLatitude(), loc.getLongitude()));
 		return false;
 	}
@@ -276,7 +277,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		Toast.makeText(this, "Connected to location service", Toast.LENGTH_SHORT).show();
 		Log.i(TAG, "Connected to service, " + Boolean.toString(mUpdatesRequested));
 		
-		//if (mUpdatesRequested) 
+		if (mUpdatesRequested) 
 		{
             mLocationClient.requestLocationUpdates(mLocationRequest, this);
         }
