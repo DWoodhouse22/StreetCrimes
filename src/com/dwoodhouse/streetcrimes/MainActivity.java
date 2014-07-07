@@ -30,13 +30,13 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 
 public class MainActivity extends Activity implements OnMarkerClickListener,  OnMyLocationButtonClickListener, ConnectionCallbacks,
 OnConnectionFailedListener, LocationListener, Observer {
@@ -90,16 +90,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 		mMap.setMyLocationEnabled(true);
 		
 		mMap.setOnMyLocationButtonClickListener((OnMyLocationButtonClickListener)this);
-		mMap.setOnMapLoadedCallback(new OnMapLoadedCallback()
-		{
-			@Override
-			public void onMapLoaded() {
-				Log.i(TAG, "Map loaded");
-				/*if (!mLocationClient.isConnected())
-					mLocationClient.connect();
-					*/	
-			}
-		});
 		
         // position the camera over london bridge
 		LatLng londonBridge = new LatLng(LAT, LNG);
@@ -176,6 +166,41 @@ OnConnectionFailedListener, LocationListener, Observer {
 		new GetCrimesTask(latLng).execute();
 	}
 	
+	private void AddMapMarkers(String data)
+	{
+		try 
+		{
+			StreetCrimeData[] crimesData = new Gson().fromJson(data, StreetCrimeData[].class);
+			
+			for (int i = 0; i < crimesData.length; i++)
+			{
+				if (crimesData[i].getCategory().equals("anti-social-behaviour"))
+				{
+					LatLng loc = new LatLng(crimesData[i].getLocation().latitude, crimesData[i].getLocation().longitude);
+					
+					String snippet = "Location: ";
+					snippet += crimesData[i].getLocation().street.name;
+					Notification n = new Notification();
+					n.put("snippet", snippet);
+					n.put("title", crimesData[i].getLocation().street.name);
+					n.put("location", loc);
+					mMapMarkers.add(mMap.addMarker(new MarkerOptions()
+						.position(loc)
+						.title("Anti-Social Behaviour")
+						.snippet(snippet)));
+				}
+				else
+				{
+					// Crimes listed alphabetically by category, no point continuing after final anti-social-behaviour
+					break;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 	
 	// Cannot run http requests on main thread so use this ASyncTask to run the connection request
 	private class GetCrimesTask extends AsyncTask<String, Void, String> {
@@ -223,7 +248,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	    protected void onPostExecute(String serverData) 
 	    {
 	    	// Fire the data off to be parsed by Gson
-	        new AddMapMarkersRunnable(serverData).run();
+	        AddMapMarkers(serverData);
 	    }
 	    
 	    protected void onPreExecute()
@@ -294,19 +319,12 @@ OnConnectionFailedListener, LocationListener, Observer {
 		//Log.d(TAG, "LocationUpdated!");
 	}
 
+	/*
+	 * Used to receive notifications with or without data from other objects/classes
+	 */
 	@Override
 	public void update(Observable observable, Object data) 
 	{
 		Notification pData = (Notification)data;
-		
-		if (pData.isNotificationType(Notification.ADD_MAP_MARKER))
-		{
-			Marker m = mMap.addMarker(new MarkerOptions()
-				.position((LatLng)pData.get("location"))
-				.title((String) pData.get("title"))
-				.snippet((String) pData.get("snippet")));
-
-			mMapMarkers.add(m);
-		}
 	}
 }
