@@ -325,6 +325,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 	@Override
 	public void update(Observable observable, Object data) 
 	{
-		Notification pData = (Notification)data;
+		//Notification pData = (Notification)data;
 	}
 }
