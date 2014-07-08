@@ -101,8 +101,8 @@ OnConnectionFailedListener, LocationListener, Observer {
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerList = (ListView)findViewById(R.id.listview_drawer);
         
-        title = new String[] 	{"Stuff", "Stuff2", "MoreStuff"};
-        subtitle = new String[] {"1", "Lovely", "Extra"};
+        title = new String[] 	{"Settings", "Settings", "Settings"};
+        subtitle = new String[] {"", "", ""};
         mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);
         mDrawerList.setAdapter(mMenuAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -112,7 +112,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mDrawerToggle = new ActionBarDrawerToggle(
  				this,
  				mDrawerLayout,
- 				R.drawable.ic_launcher, //TODO a decent icon!
+ 				R.drawable.ic_navigation_drawer, //TODO a decent icon!
  				R.string.drawer_open,
  				R.string.drawer_close) {
 
@@ -128,7 +128,9 @@ OnConnectionFailedListener, LocationListener, Observer {
  		};
      		
      	mDrawerLayout.setDrawerListener(mDrawerToggle);
-
+     	getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+        
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
@@ -177,6 +179,13 @@ OnConnectionFailedListener, LocationListener, Observer {
 		mTitle = title;
 		getSupportActionBar().setTitle(mTitle);
 	}
+	
+	@Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
 	
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 

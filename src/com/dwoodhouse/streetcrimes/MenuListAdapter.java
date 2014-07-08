@@ -51,10 +51,12 @@ public class MenuListAdapter extends BaseAdapter {
 		// Locate the TextViews
 		txtTitle = (TextView)itemView.findViewById(R.id.title);
 		txtSubTitle = (TextView)itemView.findViewById(R.id.subtitle);
+		imgIcon = (ImageView)itemView.findViewById(R.id.imgIcon);
 
 		// Set the data
 		txtTitle.setText(mTitle[position]);
 		txtSubTitle.setText(mSubTitle[position]);
+		imgIcon.setImageResource(R.drawable.ic_launcher);
 
 		return itemView;
 

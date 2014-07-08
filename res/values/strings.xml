@@ -1,7 +1,8 @@
 <resources>
 
-    <string name="app_name">StreetCrimes</string>
+    <string name="app_name">Sleuth</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
+    <string name="menu_content_description">Menu Icon</string>
 
 </resources>
