@@ -22,6 +22,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -38,7 +40,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
-public class MainActivity extends Activity implements OnMarkerClickListener,  OnMyLocationButtonClickListener, ConnectionCallbacks,
+public class MainActivity extends SherlockFragmentActivity implements OnMarkerClickListener,  OnMyLocationButtonClickListener, ConnectionCallbacks,
 OnConnectionFailedListener, LocationListener, Observer {
 	private static final String KEY_UPDATES_ON = "KEY_UPDATES_ON";
 	private final String TAG = "MainActivity";
@@ -103,6 +105,13 @@ OnConnectionFailedListener, LocationListener, Observer {
         
         notifications.add(Notification.ADD_MAP_MARKER);
 	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
+		getSupportMenuInflater().inflate(R.menu.main_menu, menu);
+		return true;
+	} 
 	
 	@Override
 	protected void onStart()
