@@ -19,11 +19,16 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -64,6 +69,17 @@ OnConnectionFailedListener, LocationListener, Observer {
     private static final long FASTEST_INTERVAL = MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
     
     LocationRequest mLocationRequest;
+    
+    // ABS Navigation Drawer
+    private String[] title;
+	private String[] subtitle;
+    private CharSequence mDrawerTitle;
+	private CharSequence mTitle;
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private MenuListAdapter mMenuAdapter;
+    
 	private Activity getActivity() { return this; }
 	
 	@Override
@@ -73,6 +89,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		// Initialisation
 		setContentView(R.layout.main_layout);
+		mTitle = mDrawerTitle = getTitle();
 		notifications = new ArrayList<String>();
 		mMapMarkers = new ArrayList<Marker>();
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
@@ -81,7 +98,37 @@ OnConnectionFailedListener, LocationListener, Observer {
         mSharedPreferences = getSharedPreferences("SharedPreferences", Context.MODE_PRIVATE);
         mSharedPrefEditor = mSharedPreferences.edit();
         mUpdatesRequested = true;
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView)findViewById(R.id.listview_drawer);
         
+        title = new String[] 	{"Stuff", "Stuff2", "MoreStuff"};
+        subtitle = new String[] {"1", "Lovely", "Extra"};
+        mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);
+        mDrawerList.setAdapter(mMenuAdapter);
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        
+        // ActionBarDrawerToggle ties together the proper interactions
+     	// between the sliding drawer and the action bar app icon
+        mDrawerToggle = new ActionBarDrawerToggle(
+ 				this,
+ 				mDrawerLayout,
+ 				R.drawable.ic_launcher, //TODO a decent icon!
+ 				R.string.drawer_open,
+ 				R.string.drawer_close) {
+
+ 			public void OnDrawerClosed(View view) {
+ 				super.onDrawerClosed(view);
+ 			}
+
+ 			public void onDrawerOpened(View drawerView) {
+ 				// Set the title on the action when drawer open
+ 				getSupportActionBar().setTitle(mDrawerTitle);
+ 				super.onDrawerOpened(drawerView);
+ 			}
+ 		};
+     		
+     	mDrawerLayout.setDrawerListener(mDrawerToggle);
+
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
@@ -107,11 +154,42 @@ OnConnectionFailedListener, LocationListener, Observer {
 	}
 	
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) 
+	public boolean onOptionsItemSelected(MenuItem item)
 	{
-		getSupportMenuInflater().inflate(R.menu.main_menu, menu);
-		return true;
-	} 
+		if (item.getItemId() == android.R.id.home) 
+		{
+			if (mDrawerLayout.isDrawerOpen(mDrawerList))
+			{
+				mDrawerLayout.closeDrawer(mDrawerList);
+			} 
+			else 
+			{
+				mDrawerLayout.openDrawer(mDrawerList);
+			}
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
+	public void setTitle(CharSequence title) 
+	{
+		mTitle = title;
+		getSupportActionBar().setTitle(mTitle);
+	}
+	
+	private class DrawerItemClickListener implements ListView.OnItemClickListener {
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+		{
+			selectItem(position);
+		}
+	}
+	
+	private void selectItem(int position) {
+		//TODO no interaction yet...
+	}
 	
 	@Override
 	protected void onStart()
@@ -284,8 +362,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 		super.onBackPressed();
 	}
 
-	/*  BUTTON AND EVENT LISTENERS */
-	
 	@Override
     public boolean onMarkerClick(Marker marker) 
 	{       
@@ -328,9 +404,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 		//Log.d(TAG, "LocationUpdated!");
 	}
 
-	/*
-	 * Used to receive notifications with or without data from other objects/classes
-	 */
 	@Override
 	public void update(Observable observable, Object data) 
 	{
