@@ -1,4 +1,6 @@
-package com.dwoodhouse.streetcrimes;
+package com.dwoodhouse.sleuth;
+
+import com.dwoodhouse.streetcrimes.R;
 
 import android.content.Context;
 import android.view.LayoutInflater;

@@ -1,4 +1,4 @@
-package com.dwoodhouse.streetcrimes;
+package com.dwoodhouse.sleuth;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.dwoodhouse.streetcrimes.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -129,7 +130,7 @@ OnConnectionFailedListener, LocationListener, Observer {
      		
      	mDrawerLayout.setDrawerListener(mDrawerToggle);
      	getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        //getActionBar().setHomeButtonEnabled(true);
         
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(UPDATE_INTERVAL);
@@ -270,27 +271,21 @@ OnConnectionFailedListener, LocationListener, Observer {
 			
 			for (int i = 0; i < crimesData.length; i++)
 			{
-				if (crimesData[i].getCategory().equals("anti-social-behaviour"))
-				{
-					LatLng loc = new LatLng(crimesData[i].getLocation().latitude, crimesData[i].getLocation().longitude);
-					
-					String snippet = "Location: ";
-					snippet += crimesData[i].getLocation().street.name;
-					Notification n = new Notification();
-					n.put("snippet", snippet);
-					n.put("title", crimesData[i].getLocation().street.name);
-					n.put("location", loc);
-					mMapMarkers.add(mMap.addMarker(new MarkerOptions()
+				LatLng loc = new LatLng(crimesData[i].getLocation().latitude,
+						crimesData[i].getLocation().longitude);
+
+				String snippet = "Location: ";
+				snippet += crimesData[i].getLocation().street.name;
+				Notification n = new Notification();
+				n.put("snippet", snippet);
+				n.put("title", crimesData[i].getLocation().street.name);
+				n.put("location", loc);
+				mMapMarkers.add(mMap.addMarker(new MarkerOptions()
 						.position(loc)
-						.title("Anti-Social Behaviour")
+						.title(crimesData[i].getCategory())
 						.snippet(snippet)));
-				}
-				else
-				{
-					// Crimes listed alphabetically by category, no point continuing after final anti-social-behaviour
-					break;
-				}
 			}
+			
 		}
 		catch (Exception e)
 		{
