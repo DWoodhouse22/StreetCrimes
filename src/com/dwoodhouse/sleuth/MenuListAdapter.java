@@ -1,14 +1,15 @@
 package com.dwoodhouse.sleuth;
 
-import com.dwoodhouse.streetcrimes.R;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.dwoodhouse.streetcrimes.R;
 
 public class MenuListAdapter extends BaseAdapter {
 
@@ -41,14 +42,23 @@ public class MenuListAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		
 		// Declare Variables
 		TextView txtTitle;
 		TextView txtSubTitle;
 		ImageView imgIcon;
-
+		SeekBar rangeBar;
+		
 		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		View itemView = inflater.inflate(R.layout.drawer_list_item, parent, false);
+		View itemView;
+		if (mTitle[position].equals("Range"))
+		{
+			itemView = inflater.inflate(R.layout.drawer_seekbar_layout, parent, false);
+			rangeBar = (SeekBar)itemView.findViewById(R.id.range_bar);
+		}
+		else
+			itemView = inflater.inflate(R.layout.drawer_list_item, parent, false);
 
 		// Locate the TextViews
 		txtTitle = (TextView)itemView.findViewById(R.id.title);

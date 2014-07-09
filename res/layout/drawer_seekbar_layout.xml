@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="left"
-        android:orientation="vertical">
+        android:orientation="vertical" >
 
         <TextView
             android:id="@+id/title"
@@ -27,6 +27,12 @@
             android:singleLine="true"
             android:textSize="20sp" />
 
+        <SeekBar
+            android:id="@+id/range_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="5000" />
+
         <TextView
             android:id="@+id/subtitle"
             style="?attr/spinnerDropDownItemStyle"
@@ -36,5 +42,5 @@
             android:singleLine="true"
             android:textSize="15sp" />
     </LinearLayout>
-    
+
 </LinearLayout>

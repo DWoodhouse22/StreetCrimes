@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -102,8 +103,8 @@ OnConnectionFailedListener, LocationListener, Observer {
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerList = (ListView)findViewById(R.id.listview_drawer);
         
-        title = new String[] 	{"Settings", "Settings", "Settings"};
-        subtitle = new String[] {"", "", ""};
+        title = new String[] 	{"Settings 1", "Settings 2", "Settings 3", "Range"};
+        subtitle = new String[] {"subtitle 1", "subtitle 2", "subtitle 3", "..."};
         mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);
         mDrawerList.setAdapter(mMenuAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -154,6 +155,11 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMap.setOnMarkerClickListener((OnMarkerClickListener)this);
         
         notifications.add(Notification.ADD_MAP_MARKER);
+        
+        for (String s : notifications)
+        {
+        	ObservingService.getInstance().addObserver(s, this);
+        }
 	}
 	
 	@Override
