@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.dwoodhouse.sleuth.math.LatLngHelper;
 import com.dwoodhouse.streetcrimes.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -103,8 +104,8 @@ OnConnectionFailedListener, LocationListener, Observer {
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerList = (ListView)findViewById(R.id.listview_drawer);
         
-        title = new String[] 	{"Settings 1", "Settings 2", "Settings 3", "Range"};
-        subtitle = new String[] {"subtitle 1", "subtitle 2", "subtitle 3", "..."};
+        title = new String[] 	{/*"Settings 1", "Settings 2", "Settings 3",*/ "Search Range"};
+        subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "..."};
         mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);
         mDrawerList.setAdapter(mMenuAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -203,6 +204,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 	}
 	
+	
+	
 	private void selectItem(int position) {
 		//TODO no interaction yet...
 	}
@@ -264,9 +267,9 @@ OnConnectionFailedListener, LocationListener, Observer {
 		super.onResume();
 	}
            
-	private void getCrimeData(LatLng latLng)
+	private void getCrimeData(LatLng latLng, List<LatLng> polyList)
 	{
-		new GetCrimesTask(latLng).execute();
+		new GetCrimesTask(latLng, polyList);
 	}
 	
 	private void AddMapMarkers(String data)
@@ -302,19 +305,48 @@ OnConnectionFailedListener, LocationListener, Observer {
 	// Cannot run http requests on main thread so use this ASyncTask to run the connection request
 	private class GetCrimesTask extends AsyncTask<String, Void, String> {
 
-		private LatLng mLatLng;
-		public GetCrimesTask(LatLng latLng)
+		private LatLng mOrigin;
+		private List<LatLng> mPolyList;
+		String requestURL;
+		public GetCrimesTask(LatLng origin, List<LatLng> polyList)
 		{
-			mLatLng = latLng;
+			mOrigin = origin;
+			mPolyList = polyList;
+			
+			requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
+			/* THIS NEEDS TO BE A METHOD BUT MULTITHREADING ISSUE!  */
+			requestURL += getPoly(mPolyList);
+			requestURL += "&date=2014-04";
+			
+			execute();
 		}
+		
+		private synchronized String getPoly(List<LatLng> positions)
+		{
+			Log.d(TAG, "START GETPOLY");
+			String polyArg = "";
+			for (LatLng latLng : positions)
+			{
+				String polyPair = Double.toString(latLng.latitude);
+				polyPair += ",";
+				polyPair += Double.toString(latLng.longitude);
+				if (latLng != positions.get(positions.size() - 1))
+					polyPair += ":";
+				polyArg += polyPair;
+			}
+			Log.d(TAG, polyArg);
+			return polyArg;
+		}
+		
 	    protected String doInBackground(String... urls) 
 	    {
 	    	try
 			{
 				BufferedReader in;
+				//http://data.police.uk/api/crimes-street/all-crime?poly=52.268,0.543:52.794,0.238:52.130,0.478&date=2013-01
 				
-				// Hard-coded URL
-				String requestURL = "http://data.police.uk/api/crimes-street/all-crime?lat=" + Double.toString(mLatLng.latitude) + "&lng=" + Double.toString(mLatLng.longitude) + "&date=2014-04";
+				Log.d(TAG, requestURL);
+				
 				HttpClient httpclient = new DefaultHttpClient();
 				
 				// Set up the Http request
@@ -381,8 +413,23 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	@Override
 	public boolean onMyLocationButtonClick() {
-		Location loc = mLocationClient.getLastLocation();
-		getCrimeData(new LatLng(loc.getLatitude(), loc.getLongitude()));
+		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
+		double range = mMenuAdapter.getBarProgress() / 2D; // /2 to get radius of range rather than total range
+		Log.d(TAG, "Range: " + Double.toString(range));
+		List<LatLng> polyList = new ArrayList<LatLng>();
+		
+		LatLng northLatLngBounds = LatLngHelper.findDestinationWithDistance(range, 0, origin);
+		LatLng eastLatLngBounds  = LatLngHelper.findDestinationWithDistance(range, 90, origin);
+		LatLng southLatLngBounds = LatLngHelper.findDestinationWithDistance(range, 180, origin);
+		LatLng westLatLngBounds  = LatLngHelper.findDestinationWithDistance(range, 270, origin);
+		
+		polyList.add(northLatLngBounds);
+		polyList.add(eastLatLngBounds);
+		polyList.add(southLatLngBounds);
+		polyList.add(westLatLngBounds);
+		
+		getCrimeData(origin, polyList);
+		
 		return false;
 	}
 
