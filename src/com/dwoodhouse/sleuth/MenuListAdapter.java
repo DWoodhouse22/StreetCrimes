@@ -1,6 +1,7 @@
 package com.dwoodhouse.sleuth;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,12 +21,13 @@ public class MenuListAdapter extends BaseAdapter {
 	private String[] mTitle;
 	private String[] mSubTitle;
 	private LayoutInflater inflater;
-	private int rangeBarProgress;
+	private int mRangeBarProgress;
 
 	public MenuListAdapter(Context context, String[] title, String[] subtitle) {
 		this.context = context;
 		this.mTitle = title;
 		this.mSubTitle = subtitle;
+		mRangeBarProgress = 1;
 	}
 
 	@Override
@@ -89,13 +91,15 @@ public class MenuListAdapter extends BaseAdapter {
 				@Override
 				public void onProgressChanged(SeekBar seekBar, int progress,
 						boolean fromUser) {
-					rangeBarProgress = seekBar.getProgress() + 1;
+					mRangeBarProgress = seekBar.getProgress() + 1;
 					String s;
-					s = Integer.toString(rangeBarProgress);
+					s = Integer.toString(mRangeBarProgress);
 					s += "Km";
 					
 					TextView tS = (TextView) itemView.findViewById(R.id.subtitle);
 					tS.setText(s);
+					
+					Log.i(TAG, s);
 				}
 
 				@Override
@@ -112,7 +116,6 @@ public class MenuListAdapter extends BaseAdapter {
 				
 			});
 			
-			rangeBarProgress = rangeBar.getProgress();
 		} 
 		else
 		{
@@ -137,7 +140,7 @@ public class MenuListAdapter extends BaseAdapter {
 	
 	public int getBarProgress()
 	{
-		return rangeBarProgress;
+		return mRangeBarProgress;
 	}
 
 }

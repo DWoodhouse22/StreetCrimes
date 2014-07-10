@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -42,6 +44,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -82,6 +85,8 @@ OnConnectionFailedListener, LocationListener, Observer {
     private ActionBarDrawerToggle mDrawerToggle;
     private MenuListAdapter mMenuAdapter;
     
+    private Map<String, Float> mMarkerColourMap;
+    
 	private Activity getActivity() { return this; }
 	
 	@Override
@@ -102,6 +107,21 @@ OnConnectionFailedListener, LocationListener, Observer {
         mUpdatesRequested = true;
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerList = (ListView)findViewById(R.id.listview_drawer);
+        mMarkerColourMap = new HashMap<String, Float>();
+        mMarkerColourMap.put("anti-social-behaviour", BitmapDescriptorFactory.HUE_AZURE);
+        mMarkerColourMap.put("bicycle-theft", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("burglary", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("criminal-damage-arson", BitmapDescriptorFactory.HUE_CYAN);
+        mMarkerColourMap.put("drugs", BitmapDescriptorFactory.HUE_GREEN);
+        mMarkerColourMap.put("other-theft", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("possession-of-weapons", BitmapDescriptorFactory.HUE_MAGENTA);
+        mMarkerColourMap.put("public-order", BitmapDescriptorFactory.HUE_ORANGE);
+        mMarkerColourMap.put("robbery", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("shoplifting", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("theft-from-the-person", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("vehicle-crime", BitmapDescriptorFactory.HUE_RED);
+        mMarkerColourMap.put("violent-crime", BitmapDescriptorFactory.HUE_ROSE);
+        mMarkerColourMap.put("other-crime", BitmapDescriptorFactory.HUE_YELLOW);
         
         title = new String[] 	{/*"Settings 1", "Settings 2", "Settings 3",*/ "Search Range"};
         subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "1km"};
@@ -184,11 +204,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 	}
 	
 	@Override
-    	protected void onPostCreate(Bundle savedInstanceState) {
-        	super.onPostCreate(savedInstanceState);
-        	// Sync the toggle state after onRestoreInstanceState has occurred.
-        	mDrawerToggle.syncState();
-    	}
+    protected void onPostCreate(Bundle savedInstanceState) {
+       	super.onPostCreate(savedInstanceState);
+       	// Sync the toggle state after onRestoreInstanceState has occurred.
+       	mDrawerToggle.syncState();
+    }
 	
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 
@@ -198,8 +218,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 			selectItem(position);
 		}
 	}
-	
-	
 	
 	private void selectItem(int position) {
 		//TODO no interaction yet...
@@ -277,7 +295,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		try 
 		{
 			StreetCrimeData[] crimesData = new Gson().fromJson(data, StreetCrimeData[].class);
-			
+			boolean existingMarkerFound = false;
 			for (int i = 0; i < crimesData.length; i++)
 			{
 				LatLng loc = new LatLng(crimesData[i].getLocation().latitude,
@@ -285,14 +303,35 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 				String snippet = "Location: ";
 				snippet += crimesData[i].getLocation().street.name;
-				Notification n = new Notification();
-				n.put("snippet", snippet);
-				n.put("title", crimesData[i].getLocation().street.name);
-				n.put("location", loc);
-				mMapMarkers.add(mMap.addMarker(new MarkerOptions()
+				
+				// TODO combine markers at the same location into one and add this information to the infoWindow
+				Marker newMarker = mMap.addMarker(new MarkerOptions()
+						.visible(false) // set not visible for now, we'll make it visible later in case we want to merge this with another marker
 						.position(loc)
 						.title(crimesData[i].getCategory())
-						.snippet(snippet)));
+						.snippet(snippet)
+						.icon(BitmapDescriptorFactory.defaultMarker(mMarkerColourMap.get(crimesData[i].getCategory()))));
+				
+				mMapMarkers.add(newMarker);
+				
+				// WIP - create a layout for the info window and add TextView objects as appropriate.
+				// The default window just doesn't support what I need!
+				/*for (Marker existingMarker : mMapMarkers)
+				{
+					int nCrimeCount = 1;
+					// See if a marker already exists at the location we want to add to
+					if (existingMarker.getPosition().equals(loc))
+					{
+						existingMarkerFound = true;
+						nCrimeCount++;
+						String nSnippet = existingMarker.getSnippet();
+					}
+				}
+				
+				if (!existingMarkerFound)
+				{
+					mMapMarkers.add(newMarker);
+				} */
 			}
 			
 		}
@@ -316,6 +355,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 			requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
 			requestURL += getPoly(mPolyList);
 			requestURL += "&date=2014-04";
+			
+			Log.d(TAG, requestURL);
 			
 			execute();
 		}
@@ -375,6 +416,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	    protected void onPostExecute(String serverData) 
 	    {
 	    	// Fire the data off to be parsed by Gson
+	    	Log.d(TAG, serverData);
 	        AddMapMarkers(serverData);
 	    }
 	    
@@ -413,15 +455,15 @@ OnConnectionFailedListener, LocationListener, Observer {
 	public boolean onMyLocationButtonClick() {
 		
 		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-		double range = mMenuAdapter.getBarProgress(); // /2 to get radius of range rather than total range
+		double range = mMenuAdapter.getBarProgress() / 2D; // /2 to get radius of range rather than total range
 		//Log.d(TAG, "Range: " + Double.toString(range));
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		
 		// Hardcoded way was ugly, this allows for easier modification
 		int precision = 8; // number of degree steps to take for the poly line
-		int degrees = 360 / precision;
 		for (int i = 0; i < precision; i++)
 		{
+			int degrees = (360 / precision) * i;
 			polyList.add(LatLngHelper.findDestinationWithDistance(range, degrees, origin));
 		}
 
