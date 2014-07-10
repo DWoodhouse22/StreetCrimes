@@ -189,11 +189,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 	}
 	
 	@Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
-    }
+    	protected void onPostCreate(Bundle savedInstanceState) {
+        	super.onPostCreate(savedInstanceState);
+        	// Sync the toggle state after onRestoreInstanceState has occurred.
+        	mDrawerToggle.syncState();
+    	}
 	
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 
@@ -314,14 +314,13 @@ OnConnectionFailedListener, LocationListener, Observer {
 			mPolyList = polyList;
 			
 			requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
-			/* THIS NEEDS TO BE A METHOD BUT MULTITHREADING ISSUE!  */
 			requestURL += getPoly(mPolyList);
 			requestURL += "&date=2014-04";
 			
 			execute();
 		}
 		
-		private synchronized String getPoly(List<LatLng> positions)
+		private String getPoly(List<LatLng> positions)
 		{
 			Log.d(TAG, "START GETPOLY");
 			String polyArg = "";
@@ -405,11 +404,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 	}
 
 	@Override
-    public boolean onMarkerClick(Marker marker) 
+    	public boolean onMarkerClick(Marker marker) 
 	{       
 		marker.showInfoWindow();
 		return true;
-    }
+    	}
 	
 	@Override
 	public boolean onMyLocationButtonClick() {
@@ -418,16 +417,14 @@ OnConnectionFailedListener, LocationListener, Observer {
 		Log.d(TAG, "Range: " + Double.toString(range));
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		
-		LatLng northLatLngBounds = LatLngHelper.findDestinationWithDistance(range, 0, origin);
-		LatLng eastLatLngBounds  = LatLngHelper.findDestinationWithDistance(range, 90, origin);
-		LatLng southLatLngBounds = LatLngHelper.findDestinationWithDistance(range, 180, origin);
-		LatLng westLatLngBounds  = LatLngHelper.findDestinationWithDistance(range, 270, origin);
-		
-		polyList.add(northLatLngBounds);
-		polyList.add(eastLatLngBounds);
-		polyList.add(southLatLngBounds);
-		polyList.add(westLatLngBounds);
-		
+		// Hardcoded way was ugly, this allows for easier modification
+		int precision = 8; // number of degree steps to take for the poly line
+		int degrees = 360 / precision;
+		for (int i = 0; i < precision; i++)
+		{
+			polyList.add(LatLngHelper.findDestinationWithDistance(range, degrees, origin));
+		}
+
 		getCrimeData(origin, polyList);
 		
 		return false;
