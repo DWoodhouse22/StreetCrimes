@@ -1,7 +1,5 @@
 package com.dwoodhouse.sleuth.math;
 
-import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
 
 public class LatLngHelper {
@@ -13,8 +11,6 @@ public class LatLngHelper {
 	 */
 	public static LatLng findDestinationWithDistance(double d, double bearing, LatLng origin)
 	{
-		//Log.d(TAG, "origin lat: " + Double.toString(origin.latitude));
-		//Log.d(TAG, "origin lng: " + Double.toString(origin.longitude));
 		double originLat = Math.toRadians(origin.latitude);
 		double originLng = Math.toRadians(origin.longitude);
 		double lat, lng;
@@ -24,10 +20,7 @@ public class LatLngHelper {
 		lat = Math.asin( Math.sin(originLat) * Math.cos(ad) + Math.cos(originLat) * Math.sin(ad) * Math.cos(bearingRad) );
 		
 		lng = originLng + Math.atan2( Math.sin(bearingRad) * Math.sin(ad) * Math.cos(originLat),
-										     Math.cos(ad) - Math.sin(originLat) * Math.sin(lat) );
-						
-		//Log.d(TAG, "Dest Lat: " + Double.toString(Math.toDegrees(lat)));
-		//Log.d(TAG, "Dest Lng: " + Double.toString(Math.toDegrees(lng)));
+									  Math.cos(ad) - Math.sin(originLat) * Math.sin(lat) );
 		
 		return new LatLng(Math.toDegrees(lat), Math.toDegrees(lng));		
 	}

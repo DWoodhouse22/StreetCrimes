@@ -33,7 +33,7 @@
             android:id="@+id/range_bar"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:max="5" /> <!-- Default is 5km -->
+            android:max="4" /> <!-- Default is 5km -->
 
         <TextView
             android:id="@+id/subtitle"

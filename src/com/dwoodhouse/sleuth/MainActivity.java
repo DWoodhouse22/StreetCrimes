@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -105,7 +104,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mDrawerList = (ListView)findViewById(R.id.listview_drawer);
         
         title = new String[] 	{/*"Settings 1", "Settings 2", "Settings 3",*/ "Search Range"};
-        subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "..."};
+        subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "1km"};
         mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);
         mDrawerList.setAdapter(mMenuAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -270,6 +269,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	private void AddMapMarkers(String data)
 	{
+		for (Marker m : mMapMarkers)
+		{
+			m.remove();
+		}
+		mMapMarkers.clear();
 		try 
 		{
 			StreetCrimeData[] crimesData = new Gson().fromJson(data, StreetCrimeData[].class);
@@ -318,7 +322,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		private String getPoly(List<LatLng> positions)
 		{
-			Log.d(TAG, "START GETPOLY");
 			String polyArg = "";
 			for (LatLng latLng : positions)
 			{
@@ -329,7 +332,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 					polyPair += ":";
 				polyArg += polyPair;
 			}
-			Log.d(TAG, polyArg);
+
 			return polyArg;
 		}
 		
@@ -340,7 +343,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 				BufferedReader in;
 				//http://data.police.uk/api/crimes-street/all-crime?poly=52.268,0.543:52.794,0.238:52.130,0.478&date=2013-01
 				
-				Log.d(TAG, requestURL);
+				//Log.d(TAG, requestURL);
 				
 				HttpClient httpclient = new DefaultHttpClient();
 				
@@ -408,9 +411,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	@Override
 	public boolean onMyLocationButtonClick() {
+		
 		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-		double range = mMenuAdapter.getBarProgress() / 2D; // /2 to get radius of range rather than total range
-		Log.d(TAG, "Range: " + Double.toString(range));
+		double range = mMenuAdapter.getBarProgress(); // /2 to get radius of range rather than total range
+		//Log.d(TAG, "Range: " + Double.toString(range));
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		
 		// Hardcoded way was ugly, this allows for easier modification

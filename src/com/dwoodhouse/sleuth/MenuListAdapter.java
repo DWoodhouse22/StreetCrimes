@@ -1,7 +1,6 @@
 package com.dwoodhouse.sleuth;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -49,19 +48,18 @@ public class MenuListAdapter extends BaseAdapter {
 
 		// Declare Variables
 		TextView txtTitle;
-		TextView txtSubTitle;
+		TextView txtSubTitle = null;
 		//ImageView imgIcon;
 		SeekBar rangeBar;
 
 		inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		View itemView;
+		final View itemView;
 		if (mTitle[position].equals("Search Range")) {
 			itemView = inflater.inflate(R.layout.drawer_seekbar_layout, parent,
 					false);
 			rangeBar = (SeekBar) itemView.findViewById(R.id.range_bar);
-
 			rangeBar.setOnTouchListener(new ListView.OnTouchListener() {
 
 				@Override
@@ -91,8 +89,13 @@ public class MenuListAdapter extends BaseAdapter {
 				@Override
 				public void onProgressChanged(SeekBar seekBar, int progress,
 						boolean fromUser) {
-					rangeBarProgress = seekBar.getProgress();
-					Log.d(TAG, Integer.toString(rangeBarProgress));
+					rangeBarProgress = seekBar.getProgress() + 1;
+					String s;
+					s = Integer.toString(rangeBarProgress);
+					s += "Km";
+					
+					TextView tS = (TextView) itemView.findViewById(R.id.subtitle);
+					tS.setText(s);
 				}
 
 				@Override
