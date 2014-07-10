@@ -86,6 +86,7 @@ OnConnectionFailedListener, LocationListener, Observer {
     private MenuListAdapter mMenuAdapter;
     
     private Map<String, Float> mMarkerColourMap;
+    private Map<String, String> mMapMarkerTitleMap;
     
 	private Activity getActivity() { return this; }
 	
@@ -110,7 +111,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMarkerColourMap = new HashMap<String, Float>();
         mMarkerColourMap.put("anti-social-behaviour", BitmapDescriptorFactory.HUE_AZURE);
         mMarkerColourMap.put("bicycle-theft", BitmapDescriptorFactory.HUE_BLUE);
-        mMarkerColourMap.put("burglary", BitmapDescriptorFactory.HUE_BLUE);
+        mMarkerColourMap.put("burglary", BitmapDescriptorFactory.HUE_VIOLET);
         mMarkerColourMap.put("criminal-damage-arson", BitmapDescriptorFactory.HUE_CYAN);
         mMarkerColourMap.put("drugs", BitmapDescriptorFactory.HUE_GREEN);
         mMarkerColourMap.put("other-theft", BitmapDescriptorFactory.HUE_BLUE);
@@ -122,6 +123,22 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMarkerColourMap.put("vehicle-crime", BitmapDescriptorFactory.HUE_RED);
         mMarkerColourMap.put("violent-crime", BitmapDescriptorFactory.HUE_ROSE);
         mMarkerColourMap.put("other-crime", BitmapDescriptorFactory.HUE_YELLOW);
+        
+        mMapMarkerTitleMap = new HashMap<String, String>();
+        mMapMarkerTitleMap.put("anti-social-behaviour", "Anti Social Behaviour");
+        mMapMarkerTitleMap.put("bicycle-theft", "Theft - Bicycle");
+        mMapMarkerTitleMap.put("burglary", "Burglary");
+        mMapMarkerTitleMap.put("criminal-damage-arson", "Arson");
+        mMapMarkerTitleMap.put("drugs", "Drugs");
+        mMapMarkerTitleMap.put("other-theft", "Theft - Other");
+        mMapMarkerTitleMap.put("possession-of-weapons", "Weapons Possession");
+        mMapMarkerTitleMap.put("public-order", "Public Order");
+        mMapMarkerTitleMap.put("robbery", "Robbery");
+        mMapMarkerTitleMap.put("shoplifting", "Shoplifting");
+        mMapMarkerTitleMap.put("theft-from-the-person", "Theft From The Person");
+        mMapMarkerTitleMap.put("vehicle-crime", "Vehicle Crime");
+        mMapMarkerTitleMap.put("violent-crime", "Violent Crime");
+        mMapMarkerTitleMap.put("other-crime", "Other");
         
         title = new String[] 	{/*"Settings 1", "Settings 2", "Settings 3",*/ "Search Range"};
         subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "1km"};
@@ -306,9 +323,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 				
 				// TODO combine markers at the same location into one and add this information to the infoWindow
 				Marker newMarker = mMap.addMarker(new MarkerOptions()
-						.visible(false) // set not visible for now, we'll make it visible later in case we want to merge this with another marker
 						.position(loc)
-						.title(crimesData[i].getCategory())
+						.title(mMapMarkerTitleMap.get(crimesData[i].getCategory()))
 						.snippet(snippet)
 						.icon(BitmapDescriptorFactory.defaultMarker(mMarkerColourMap.get(crimesData[i].getCategory()))));
 				
@@ -355,8 +371,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 			requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
 			requestURL += getPoly(mPolyList);
 			requestURL += "&date=2014-04";
-			
-			Log.d(TAG, requestURL);
 			
 			execute();
 		}
