@@ -156,11 +156,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMap.setOnMarkerClickListener((OnMarkerClickListener)this);
         
         notifications.add(Notification.ADD_MAP_MARKER);
-        
-        for (String s : notifications)
-        {
-        	ObservingService.getInstance().addObserver(s, this);
-        }
+
 	}
 	
 	@Override
