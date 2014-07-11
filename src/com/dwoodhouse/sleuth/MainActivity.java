@@ -26,7 +26,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -41,6 +43,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.MapFragment;
@@ -185,6 +188,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		LatLng londonBridge = new LatLng(LAT, LNG);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(londonBridge, 13));  
         
+        
         // Send off a request to retrieve the crime data using the default location initially
      	//getCrimeData(new LatLng(LAT, LNG));
 
@@ -322,13 +326,40 @@ OnConnectionFailedListener, LocationListener, Observer {
 				snippet += crimesData[i].getLocation().street.name;
 				
 				// TODO combine markers at the same location into one and add this information to the infoWindow
-				Marker newMarker = mMap.addMarker(new MarkerOptions()
+				final Marker newMarker = mMap.addMarker(new MarkerOptions()
 						.position(loc)
 						.title(mMapMarkerTitleMap.get(crimesData[i].getCategory()))
 						.snippet(snippet)
 						.icon(BitmapDescriptorFactory.defaultMarker(mMarkerColourMap.get(crimesData[i].getCategory()))));
 				
 				mMapMarkers.add(newMarker);
+				
+				// Setting a custom info window adapter for the google map
+		        mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
+		 
+		            // Use default InfoWindow frame
+		            @Override
+		            public View getInfoWindow(Marker marker) {
+		                return null;
+		            }
+		 
+		            // Defines the contents of the InfoWindow
+		            @Override
+		            public View getInfoContents(Marker marker) {
+		 
+		                View windowLayout = getLayoutInflater().inflate(R.layout.map_custom_info_window, null);
+		                TextView title = (TextView) windowLayout.findViewById(R.id.info_title);
+		                TextView subtitle = (TextView) windowLayout.findViewById(R.id.info_subtitle);
+		                LinearLayout crimeList = (LinearLayout)windowLayout.findViewById(R.id.info_list);
+		                
+		                title.setText("Crime " + newMarker.getTitle());
+		                subtitle.setText("number of crimes reported here...");
+		 
+		                // Returning the view containing InfoWindow contents
+		                return windowLayout;
+		 
+		            }
+		        });
 				
 				// WIP - create a layout for the info window and add TextView objects as appropriate.
 				// The default window just doesn't support what I need!
