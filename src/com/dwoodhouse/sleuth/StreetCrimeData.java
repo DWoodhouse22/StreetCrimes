@@ -1,5 +1,7 @@
 package com.dwoodhouse.sleuth;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class StreetCrimeData {
 /*
  * Example JSON response for reference
@@ -27,12 +29,18 @@ public class StreetCrimeData {
     
 	private String category;
 	private LocationData location;
+	private String month;
 	
 	class LocationData
 	{
 		public double latitude;
 		public double longitude;
 		public Street street;
+		
+		public LatLng toLatLng()
+		{
+			return new LatLng(latitude, longitude);
+		}
 	}
 	
 	class Street
@@ -47,5 +55,10 @@ public class StreetCrimeData {
 
 	public LocationData getLocation() {
 		return location;
+	}
+	
+	public String getMonth()
+	{
+		return month;
 	}
 }

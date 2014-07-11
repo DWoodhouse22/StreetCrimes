@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
     <issue id="NewApi">
-        <ignore path="src/com/dwoodhouse/streetcrimes/MainActivity.java" />
+        <ignore path="src/com/dwoodhouse/sleuth/MainActivity.java" />
     </issue>
 </lint>

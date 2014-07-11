@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -89,7 +91,7 @@ OnConnectionFailedListener, LocationListener, Observer {
     private MenuListAdapter mMenuAdapter;
     
     private Map<String, Float> mMarkerColourMap;
-    private Map<String, String> mMapMarkerTitleMap;
+    public static Map<String, String> mMapMarkerTitleMap;
     
 	private Activity getActivity() { return this; }
 	
@@ -114,7 +116,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMarkerColourMap = new HashMap<String, Float>();
         mMarkerColourMap.put("anti-social-behaviour", BitmapDescriptorFactory.HUE_AZURE);
         mMarkerColourMap.put("bicycle-theft", BitmapDescriptorFactory.HUE_BLUE);
-        mMarkerColourMap.put("burglary", BitmapDescriptorFactory.HUE_VIOLET);
+        mMarkerColourMap.put("burglary", BitmapDescriptorFactory.HUE_BLUE);
         mMarkerColourMap.put("criminal-damage-arson", BitmapDescriptorFactory.HUE_CYAN);
         mMarkerColourMap.put("drugs", BitmapDescriptorFactory.HUE_GREEN);
         mMarkerColourMap.put("other-theft", BitmapDescriptorFactory.HUE_BLUE);
@@ -308,6 +310,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	private void AddMapMarkers(String data)
 	{
+		Log.d(TAG, data);
 		for (Marker m : mMapMarkers)
 		{
 			m.remove();
@@ -315,25 +318,65 @@ OnConnectionFailedListener, LocationListener, Observer {
 		mMapMarkers.clear();
 		try 
 		{
-			StreetCrimeData[] crimesData = new Gson().fromJson(data, StreetCrimeData[].class);
-			boolean existingMarkerFound = false;
-			for (int i = 0; i < crimesData.length; i++)
+			List<StreetCrimeData> crimesDataList = new LinkedList<StreetCrimeData>(Arrays.asList(new Gson().fromJson(data, StreetCrimeData[].class))); // convert the array into a list, more flexible.
+			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList); 
+			final List<CombinedStreetCrimeData> combinedStreetCrimeDataList = new ArrayList<CombinedStreetCrimeData>(); // This list contains all data at the same location in one object
+			int duplicatesFound = 0;
+			List<StreetCrimeData> removedData = new ArrayList<StreetCrimeData>();
+			// Loop through list to find duplicate locations, we'll merge these together
+			
+			/*
+			 * TODO - This nested loop arrangement is really horrible...
+			 * Perhaps use an Iterator instead?
+			 */
+			
+			for (int i = 0; i < crimesDataList.size(); i++)
 			{
-				LatLng loc = new LatLng(crimesData[i].getLocation().latitude,
-						crimesData[i].getLocation().longitude);
+				boolean wantToContinue = false;
+				StreetCrimeData nData = crimesDataList.get(i);
+				for (StreetCrimeData qData : removedData)
+				{
+					if (nData.equals(qData))
+						wantToContinue = true;
+				}
+				
+				if (wantToContinue)
+					continue;
+				
+				LatLng currentLatLng = new LatLng(nData.getLocation().latitude, nData.getLocation().longitude);
+				CombinedStreetCrimeData combinedData = new CombinedStreetCrimeData(nData, this);
+				for (int j = crimesDataListCopy.size() - 1; j >= i + 1; j--)
+				{
+					StreetCrimeData pData = crimesDataListCopy.get(j);
+					LatLng nextLatLng = new LatLng(pData.getLocation().latitude, pData.getLocation().longitude);
+					if (currentLatLng.equals(nextLatLng))
+					{
+						duplicatesFound++;
+						combinedData.addCrimeData(pData);
+						removedData.add(pData);
+					}
+				}
+				
+				combinedStreetCrimeDataList.add(combinedData);
+			}
+			
+			Log.d(TAG, "Duplicates Found: " + Integer.toString(duplicatesFound));
 
-				String snippet = "Location: ";
-				snippet += crimesData[i].getLocation().street.name;
+			// Now loop through the combined data list and add these markers to the map
+			for (final CombinedStreetCrimeData nData : combinedStreetCrimeDataList)
+			{
+				LatLng loc = nData.getmLocation();
 				
 				// TODO combine markers at the same location into one and add this information to the infoWindow
-				final Marker newMarker = mMap.addMarker(new MarkerOptions()
-						.position(loc)
-						.title(mMapMarkerTitleMap.get(crimesData[i].getCategory()))
-						.snippet(snippet)
-						.icon(BitmapDescriptorFactory.defaultMarker(mMarkerColourMap.get(crimesData[i].getCategory()))));
+					final Marker newMarker = mMap.addMarker(new MarkerOptions()
+					.position(loc)
+					.snippet(nData.getmLocationName())
+					.icon(BitmapDescriptorFactory.defaultMarker(nData.getmCrimes().size() > 1 ? BitmapDescriptorFactory.HUE_VIOLET : mMarkerColourMap.get(nData.getmCategory()))));
+			
+					
+					mMapMarkers.add(newMarker);
 				
-				mMapMarkers.add(newMarker);
-				
+
 				// Setting a custom info window adapter for the google map
 		        mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
 		 
@@ -346,57 +389,35 @@ OnConnectionFailedListener, LocationListener, Observer {
 		            // Defines the contents of the InfoWindow
 		            @Override
 		            public View getInfoContents(Marker marker) {
-		 
-		                View windowLayout = getLayoutInflater().inflate(R.layout.map_custom_info_window, null);
-		                TextView title = (TextView) windowLayout.findViewById(R.id.info_title);
-		                TextView subtitle = (TextView) windowLayout.findViewById(R.id.info_subtitle);
-		                LinearLayout crimeList = (LinearLayout)windowLayout.findViewById(R.id.info_list);
+		            	CombinedStreetCrimeData nMarker = null;
+		            	for (CombinedStreetCrimeData n : combinedStreetCrimeDataList)
+		            	{
+		            		if (n.getmLocationName().equals(marker.getSnippet())) // TODO Need a better unique ID!!
+		            		{
+		            			nMarker = n;
+		            			break;
+		            		}
+		            	}
 		                
-		                title.setText("Crime " + newMarker.getTitle());
-		                subtitle.setText("number of crimes reported here...");
-		 
-		                // Returning the view containing InfoWindow contents
-		                return windowLayout;
-		 
+		            	return nMarker.getView();
+		            
 		            }
 		        });
-				
-				// WIP - create a layout for the info window and add TextView objects as appropriate.
-				// The default window just doesn't support what I need!
-				/*for (Marker existingMarker : mMapMarkers)
-				{
-					int nCrimeCount = 1;
-					// See if a marker already exists at the location we want to add to
-					if (existingMarker.getPosition().equals(loc))
-					{
-						existingMarkerFound = true;
-						nCrimeCount++;
-						String nSnippet = existingMarker.getSnippet();
-					}
-				}
-				
-				if (!existingMarkerFound)
-				{
-					mMapMarkers.add(newMarker);
-				} */
 			}
-			
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
+			Log.e(TAG, "ERROR PARSING THE JSON DATA, " + e.getMessage());			
 		}
 	}
 	
 	// Cannot run http requests on main thread so use this ASyncTask to run the connection request
 	private class GetCrimesTask extends AsyncTask<String, Void, String> {
-
-		private LatLng mOrigin;
 		private List<LatLng> mPolyList;
 		String requestURL;
 		public GetCrimesTask(LatLng origin, List<LatLng> polyList)
 		{
-			mOrigin = origin;
 			mPolyList = polyList;
 			
 			requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
@@ -426,10 +447,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 	    {
 	    	try
 			{
+	    		//TODO handle time outs!
 				BufferedReader in;
 				//http://data.police.uk/api/crimes-street/all-crime?poly=52.268,0.543:52.794,0.238:52.130,0.478&date=2013-01
 				
-				//Log.d(TAG, requestURL);
+				Log.d(TAG, requestURL);
 				
 				HttpClient httpclient = new DefaultHttpClient();
 				
@@ -452,8 +474,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 				
 				Log.e(TAG, "Error in http connection " + message);
 				
-				return "Error!";
-				
+				return "Error!";	
 		    }
 	    }
 	    
@@ -490,17 +511,17 @@ OnConnectionFailedListener, LocationListener, Observer {
 	}
 
 	@Override
-    	public boolean onMarkerClick(Marker marker) 
+    public boolean onMarkerClick(Marker marker) 
 	{       
 		marker.showInfoWindow();
 		return true;
-    	}
+    }
 	
 	@Override
 	public boolean onMyLocationButtonClick() {
 		
 		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-		double range = mMenuAdapter.getBarProgress() / 2D; // /2 to get radius of range rather than total range
+		double range = mMenuAdapter.getBarProgress(); // /2 to get radius of range rather than total range
 		//Log.d(TAG, "Range: " + Double.toString(range));
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		
