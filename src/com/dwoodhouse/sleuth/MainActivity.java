@@ -57,6 +57,7 @@ import com.google.gson.Gson;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMarkerClickListener,  OnMyLocationButtonClickListener, ConnectionCallbacks,
 OnConnectionFailedListener, LocationListener, Observer {
+	private static final int MAX_CRIMES_TO_DISPLAY = 1000;
 	private static final String KEY_UPDATES_ON = "KEY_UPDATES_ON";
 	private final String TAG = "MainActivity";
 	private final double LAT = 51.5046742;
@@ -330,8 +331,13 @@ OnConnectionFailedListener, LocationListener, Observer {
 			 * Perhaps use an Iterator instead?
 			 */
 			
-			for (int i = 0; i < crimesDataList.size(); i++)
+			// Limit results to 1000 crimes
+			boolean hitCrimeLimit = false;
+			for (int i = 0; i < (crimesDataList.size() <= MAX_CRIMES_TO_DISPLAY ? crimesDataList.size() : MAX_CRIMES_TO_DISPLAY); i++)
 			{
+				if (i == 999 && crimesDataList.size() > 999)
+					hitCrimeLimit = true;
+				
 				boolean wantToContinue = false;
 				StreetCrimeData nData = crimesDataList.get(i);
 				for (StreetCrimeData qData : removedData)
@@ -360,7 +366,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 				combinedStreetCrimeDataList.add(combinedData);
 			}
 			
-			Log.d(TAG, "Duplicates Found: " + Integer.toString(duplicatesFound));
+			if (hitCrimeLimit)
+				Toast.makeText(this, "Too many crimes! Displaying first 1000 only", Toast.LENGTH_LONG).show();
+			
+			//Log.d(TAG, "Duplicates Found: " + Integer.toString(duplicatesFound));
 
 			// Now loop through the combined data list and add these markers to the map
 			for (final CombinedStreetCrimeData nData : combinedStreetCrimeDataList)
@@ -368,7 +377,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 				LatLng loc = nData.getmLocation();
 				
 				// TODO combine markers at the same location into one and add this information to the infoWindow
-					final Marker newMarker = mMap.addMarker(new MarkerOptions()
+				final Marker newMarker = mMap.addMarker(new MarkerOptions()
 					.position(loc)
 					.snippet(nData.getmLocationName())
 					.icon(BitmapDescriptorFactory.defaultMarker(nData.getmCrimes().size() > 1 ? BitmapDescriptorFactory.HUE_VIOLET : mMarkerColourMap.get(nData.getmCategory()))));

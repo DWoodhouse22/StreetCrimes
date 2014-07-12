@@ -1,10 +1,11 @@
 package com.dwoodhouse.sleuth;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,15 +22,19 @@ public class CombinedStreetCrimeData {
 	private String mCategory;
 	private Activity mActivity;
 	
+	private Map<String, Integer> mCrimeCategoryCount;
+	
 	public CombinedStreetCrimeData(StreetCrimeData nData, Activity context)
 	{
 		mCrimes = new ArrayList<StreetCrimeData>();
 		mCrimes.add(nData);
 		
+		mCrimeCategoryCount = new HashMap<String, Integer>();
 		mLocation = nData.getLocation().toLatLng();
 		mLocationName = nData.getLocation().street.name;
 		mMonth = nData.getMonth();
 		mCategory = nData.getCategory();
+		
 		
 		mActivity = context;
 	}
@@ -68,12 +73,27 @@ public class CombinedStreetCrimeData {
 
         for (StreetCrimeData data : mCrimes)
         {
-        	TextView crimeInformation = new TextView(mActivity);
-        	crimeInformation.setText(MainActivity.mMapMarkerTitleMap.get(data.getCategory()));
-        	LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        	String category = data.getCategory();
+        	TextView crimeInformation;
+        	if (mCrimeCategoryCount.containsKey(data.getCategory()))
+        	{
+        		mCrimeCategoryCount.put(category, mCrimeCategoryCount.get(category) + 1);
+        		crimeInformation = (TextView)crimeList.findViewWithTag(data.getCategory());
+        	}
+        	else
+        	{
+        		mCrimeCategoryCount.put(category, 1);
+        		crimeInformation = new TextView(mActivity);
+        		crimeInformation.setTag(category);
+        		crimeList.addView(crimeInformation);
+        		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            	crimeInformation.setLayoutParams(params);
+        	}
         	
-        	crimeInformation.setLayoutParams(params);
-        	crimeList.addView(crimeInformation);
+        	String s = MainActivity.mMapMarkerTitleMap.get(data.getCategory());
+    		s += ": ";
+    		s += Integer.toString(mCrimeCategoryCount.get(category));
+    		crimeInformation.setText(s);
         }
         
 		return windowLayout;
