@@ -12,7 +12,9 @@
         android:layout_height="wrap_content" 
         android:ellipsize="end"
         android:singleLine="false"
-        android:textSize="15sp" />
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingBottom="5dp" />
     
     <TextView
         android:id="@+id/info_subtitle"
@@ -20,7 +22,8 @@
         android:layout_height="wrap_content" 
         android:ellipsize="end"
         android:singleLine="false"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        android:paddingBottom="5dp" />
         
     <LinearLayout 
         android:id="@+id/info_list"

@@ -18,9 +18,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -28,9 +31,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -60,8 +61,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 	private static final int MAX_CRIMES_TO_DISPLAY = 1000;
 	private static final String KEY_UPDATES_ON = "KEY_UPDATES_ON";
 	private final String TAG = "MainActivity";
-	private final double LAT = 51.5046742;
-	private final double LNG = -0.0860056;
 	private List<Marker> mMapMarkers;
 	private List<String> notifications;
 	
@@ -186,20 +185,19 @@ OnConnectionFailedListener, LocationListener, Observer {
 		mMap.setMyLocationEnabled(true);
 		
 		mMap.setOnMyLocationButtonClickListener((OnMyLocationButtonClickListener)this);
-		
-        // position the camera over london bridge
-		LatLng londonBridge = new LatLng(LAT, LNG);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(londonBridge, 13));  
-        
-        
-        // Send off a request to retrieve the crime data using the default location initially
-     	//getCrimeData(new LatLng(LAT, LNG));
+
+		// Set initial map location to the last known location of this device.
+		Criteria criteria = new Criteria();
+		LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+		String provider = locationManager.getBestProvider(criteria, true);
+		Location location = locationManager.getLastKnownLocation(provider);
+		LatLng initialLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLatLng, 13));  
 
         // Set a click listener for the markers to display the position overlay
         mMap.setOnMarkerClickListener((OnMarkerClickListener)this);
         
         notifications.add(Notification.ADD_MAP_MARKER);
-
 	}
 	
 	@Override
@@ -322,7 +320,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 			List<StreetCrimeData> crimesDataList = new LinkedList<StreetCrimeData>(Arrays.asList(new Gson().fromJson(data, StreetCrimeData[].class))); // convert the array into a list, more flexible.
 			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList); 
 			final List<CombinedStreetCrimeData> combinedStreetCrimeDataList = new ArrayList<CombinedStreetCrimeData>(); // This list contains all data at the same location in one object
-			int duplicatesFound = 0;
 			List<StreetCrimeData> removedData = new ArrayList<StreetCrimeData>();
 			// Loop through list to find duplicate locations, we'll merge these together
 			
@@ -357,7 +354,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 					LatLng nextLatLng = new LatLng(pData.getLocation().latitude, pData.getLocation().longitude);
 					if (currentLatLng.equals(nextLatLng))
 					{
-						duplicatesFound++;
 						combinedData.addCrimeData(pData);
 						removedData.add(pData);
 					}
@@ -381,8 +377,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 					.position(loc)
 					.snippet(nData.getmLocationName())
 					.icon(BitmapDescriptorFactory.defaultMarker(nData.getmCrimes().size() > 1 ? BitmapDescriptorFactory.HUE_VIOLET : mMarkerColourMap.get(nData.getmCategory()))));
-			
-					
+
 					mMapMarkers.add(newMarker);
 				
 
@@ -416,8 +411,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
-			Log.e(TAG, "ERROR PARSING THE JSON DATA, " + e.getMessage());			
+			e.printStackTrace();			
 		}
 	}
 	
@@ -433,6 +427,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 			requestURL += getPoly(mPolyList);
 			requestURL += "&date=2014-04";
 			
+			// Start the task
 			execute();
 		}
 		
@@ -491,7 +486,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	    protected void onPostExecute(String serverData) 
 	    {
 	    	// Fire the data off to be parsed by Gson
-	    	Log.d(TAG, serverData);
+	    	//Log.d(TAG, serverData);
 	        AddMapMarkers(serverData);
 	    }
 	    
