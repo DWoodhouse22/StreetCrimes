@@ -530,7 +530,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	public boolean onMyLocationButtonClick() {
 		
 		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-		double range = mMenuAdapter.getBarProgress(); // /2 to get radius of range rather than total range
+		double range = mMenuAdapter.getBarProgress() / 2D; // /2 to get radius of range rather than total range
 		//Log.d(TAG, "Range: " + Double.toString(range));
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		

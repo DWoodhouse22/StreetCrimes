@@ -73,7 +73,7 @@ public class CombinedStreetCrimeData {
 
         for (StreetCrimeData data : mCrimes)
         {
-        	String category = data.getCategory();
+        	String category = data.getCategory() == null ? "Unknown" : data.getCategory();
         	TextView crimeInformation;
         	if (mCrimeCategoryCount.containsKey(data.getCategory()))
         	{
