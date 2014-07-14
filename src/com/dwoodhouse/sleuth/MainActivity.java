@@ -1,8 +1,5 @@
 package com.dwoodhouse.sleuth;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,19 +9,11 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import android.app.Activity;
-import android.app.Service;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -92,9 +81,7 @@ OnConnectionFailedListener, LocationListener, Observer {
     
     private Map<String, Float> mMarkerColourMap;
     public static Map<String, String> mMapMarkerTitleMap;
-    
-	private Activity getActivity() { return this; }
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -197,9 +184,28 @@ OnConnectionFailedListener, LocationListener, Observer {
         // Set a click listener for the markers to display the position overlay
         mMap.setOnMarkerClickListener((OnMarkerClickListener)this);
         
-        notifications.add(Notification.ADD_MAP_MARKER);
+        notifications.add(Notification.ADD_MAP_MARKERS);
 	}
 	
+	@Override
+	protected void onStart()
+	{
+		super.onStart();
+		mSharedPrefEditor.putBoolean(KEY_UPDATES_ON, mUpdatesRequested);
+		mSharedPrefEditor.commit();
+		
+		for (String s : notifications)
+        {
+        	ObservingService.getInstance().addObserver(s, this);
+        }
+		
+		if (!mLocationClient.isConnected() && !mLocationClient.isConnecting())
+			mLocationClient.connect();	
+	}
+	
+	/*
+	 * Show / Hide navigation drawer
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -241,25 +247,12 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 	}
 	
-	private void selectItem(int position) {
+	private void selectItem(int position) 
+	{
 		//TODO no interaction yet...
 	}
 	
-	@Override
-	protected void onStart()
-	{
-		super.onStart();
-		mSharedPrefEditor.putBoolean(KEY_UPDATES_ON, mUpdatesRequested);
-		mSharedPrefEditor.commit();
-		
-		for (String s : notifications)
-        {
-        	ObservingService.getInstance().addObserver(s, this);
-        }
-		
-		if (!mLocationClient.isConnected() && !mLocationClient.isConnecting())
-			mLocationClient.connect();	
-	}
+	
 	
 	@Override
 	protected void onStop()
@@ -415,87 +408,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 	}
 	
-	// Cannot run http requests on main thread so use this ASyncTask to run the connection request
-	private class GetCrimesTask extends AsyncTask<String, Void, String> {
-		private List<LatLng> mPolyList;
-		String requestURL;
-		public GetCrimesTask(LatLng origin, List<LatLng> polyList)
-		{
-			mPolyList = polyList;
-			
-			requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
-			requestURL += getPoly(mPolyList);
-			requestURL += "&date=2014-04";
-			
-			// Start the task
-			execute();
-		}
-		
-		private String getPoly(List<LatLng> positions)
-		{
-			String polyArg = "";
-			for (LatLng latLng : positions)
-			{
-				String polyPair = Double.toString(latLng.latitude);
-				polyPair += ",";
-				polyPair += Double.toString(latLng.longitude);
-				if (latLng != positions.get(positions.size() - 1))
-					polyPair += ":";
-				polyArg += polyPair;
-			}
-
-			return polyArg;
-		}
-		
-	    protected String doInBackground(String... urls) 
-	    {
-	    	try
-			{
-	    		//TODO handle time outs!
-				BufferedReader in;
-				//http://data.police.uk/api/crimes-street/all-crime?poly=52.268,0.543:52.794,0.238:52.130,0.478&date=2013-01
-				
-				Log.d(TAG, requestURL);
-				
-				HttpClient httpclient = new DefaultHttpClient();
-				
-				// Set up the Http request
-		        HttpGet request = new HttpGet();
-		        URI website = new URI(requestURL);
-		        request.setURI(website);
-		        
-		        // Try and get a response
-		        HttpResponse response = httpclient.execute(request);
-		        // Read data received from the request
-		        in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-		        String line = in.readLine();
-		        
-		        return line;
-		    }
-			catch(Exception e)
-			{
-				String message = (e.getMessage() == null) ? "Message is empty" : e.getMessage();
-				
-				Log.e(TAG, "Error in http connection " + message);
-				
-				return "Error!";	
-		    }
-	    }
-	    
-	    //This is called once the task has completed
-	    protected void onPostExecute(String serverData) 
-	    {
-	    	// Fire the data off to be parsed by Gson
-	    	//Log.d(TAG, serverData);
-	        AddMapMarkers(serverData);
-	    }
-	    
-	    protected void onPreExecute()
-	    {
-	    	// Some basic user feedback so they know something's happening
-	    	Toast.makeText(getActivity(), "Fetching data...", Toast.LENGTH_LONG).show();
-	    }
-	}
+	
 	
 	@Override
 	public void onBackPressed()
@@ -573,6 +486,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 	@Override
 	public void update(Observable observable, Object data) 
 	{
-		//Notification pData = (Notification)data;
+		Notification pData = (Notification)data;
+		if (pData.isNotificationType(Notification.ADD_MAP_MARKERS))
+		{
+			this.AddMapMarkers((String)pData.get("serverData"));
+		}
 	}
 }

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Notification extends HashMap<String, Object>
 {
-	public static final String ADD_MAP_MARKER = "addMapMarker";
+	public static final String ADD_MAP_MARKERS = "addMapMarkers";
 	
 	
 	
