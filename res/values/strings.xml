@@ -4,5 +4,7 @@
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
     <string name="menu_content_description">Menu Icon</string>
-
+    <string name="range_bar_subtitle">1km</string>
+	<string name="range_bar_title">Search Range</string>
+	<string name="button_sleuth">Sleuth!</string>
 </resources>

@@ -8,17 +8,62 @@
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.MapFragment" />
+        class="com.google.android.gms.maps.MapFragment" >
+    </fragment>
 
-    <ListView
-        android:id="@+id/listview_drawer"
+    <LinearLayout
+        android:id="@+id/drawer_list"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="#EEEEEE"
         android:choiceMode="singleChoice"
         android:divider="@android:color/transparent"
-        android:dividerHeight="0dp" />
+        android:dividerHeight="0dp"
+        android:orientation="vertical" >
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/range_bar_title"
+                style="?attr/spinnerDropDownItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/range_bar_title"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textSize="20sp" />
+
+            <SeekBar
+                android:id="@+id/range_bar"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:max="4" /> <!-- Default is 5km -->
+
+            <TextView
+                android:id="@+id/range_bar_subtitle"
+                style="?attr/spinnerDropDownItemStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/range_bar_subtitle"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textSize="15sp" />
+        </LinearLayout>
+        
+        <Button
+            android:id="@+id/button_sleuth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="@string/button_sleuth" >
+            
+        </Button>
+        
+    </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

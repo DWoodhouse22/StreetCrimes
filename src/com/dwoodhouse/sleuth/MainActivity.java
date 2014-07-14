@@ -20,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -45,7 +46,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
-public class MainActivity extends SherlockFragmentActivity implements OnMarkerClickListener,  OnMyLocationButtonClickListener, ConnectionCallbacks,
+public class MainActivity extends SherlockFragmentActivity implements ConnectionCallbacks,
 OnConnectionFailedListener, LocationListener, Observer {
 	private static final int MAX_CRIMES_TO_DISPLAY = 1000;
 	private static final String KEY_UPDATES_ON = "KEY_UPDATES_ON";
@@ -75,7 +76,7 @@ OnConnectionFailedListener, LocationListener, Observer {
     private CharSequence mDrawerTitle;
 	private CharSequence mTitle;
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private LinearLayout mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     private MenuListAdapter mMenuAdapter;
     
@@ -89,6 +90,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		// Initialisation
 		setContentView(R.layout.main_layout);
+		new NavigationDrawerHandler((LinearLayout)findViewById(R.id.drawer_list)); // create object to handle drawer input
 		mTitle = mDrawerTitle = getTitle();
 		notifications = new ArrayList<String>();
 		mMapMarkers = new ArrayList<Marker>();
@@ -99,7 +101,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mSharedPrefEditor = mSharedPreferences.edit();
         mUpdatesRequested = true;
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView)findViewById(R.id.listview_drawer);
+        mDrawerList = (LinearLayout)findViewById(R.id.drawer_list);
         mMarkerColourMap = new HashMap<String, Float>();
         mMarkerColourMap.put("anti-social-behaviour", BitmapDescriptorFactory.HUE_AZURE);
         mMarkerColourMap.put("bicycle-theft", BitmapDescriptorFactory.HUE_BLUE);
@@ -134,16 +136,13 @@ OnConnectionFailedListener, LocationListener, Observer {
         
         title = new String[] 	{/*"Settings 1", "Settings 2", "Settings 3",*/ "Search Range"};
         subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "1km"};
-        mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);
-        mDrawerList.setAdapter(mMenuAdapter);
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-        
+        mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);        
         // ActionBarDrawerToggle ties together the proper interactions
      	// between the sliding drawer and the action bar app icon
         mDrawerToggle = new ActionBarDrawerToggle(
  				this,
  				mDrawerLayout,
- 				R.drawable.ic_navigation_drawer, //TODO a decent icon!
+ 				R.drawable.ic_navigation_drawer,
  				R.string.drawer_open,
  				R.string.drawer_close) {
 
@@ -160,19 +159,23 @@ OnConnectionFailedListener, LocationListener, Observer {
      		
      	mDrawerLayout.setDrawerListener(mDrawerToggle);
      	getActionBar().setDisplayHomeAsUpEnabled(true);
-        //getActionBar().setHomeButtonEnabled(true);
         
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-		
-		// Disable user inputs
+
 		mMap.getUiSettings().setAllGesturesEnabled(true);
 		mMap.getUiSettings().setZoomControlsEnabled(false);
 		mMap.setMyLocationEnabled(true);
 		
-		mMap.setOnMyLocationButtonClickListener((OnMyLocationButtonClickListener)this);
-
+		mMap.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener()
+		{
+			@Override
+			public boolean onMyLocationButtonClick() {
+				return true;
+			}
+		});
+		
 		// Set initial map location to the last known location of this device.
 		Criteria criteria = new Criteria();
 		LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
@@ -182,9 +185,25 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLatLng, 13));  
 
         // Set a click listener for the markers to display the position overlay
-        mMap.setOnMarkerClickListener((OnMarkerClickListener)this);
+        mMap.setOnMarkerClickListener(new OnMarkerClickListener()
+        {
+			@Override
+			public boolean onMarkerClick(Marker marker) {
+				if (marker.isInfoWindowShown())
+				{
+					marker.hideInfoWindow();
+				}
+				else
+				{
+					marker.showInfoWindow();
+				}
+				
+				return false;
+			}
+        });
         
         notifications.add(Notification.ADD_MAP_MARKERS);
+        notifications.add(Notification.SLEUTH_BUTTON_PRESSED);
 	}
 	
 	@Override
@@ -238,22 +257,6 @@ OnConnectionFailedListener, LocationListener, Observer {
        	mDrawerToggle.syncState();
     }
 	
-	private class DrawerItemClickListener implements ListView.OnItemClickListener {
-
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
-		{
-			selectItem(position);
-		}
-	}
-	
-	private void selectItem(int position) 
-	{
-		//TODO no interaction yet...
-	}
-	
-	
-	
 	@Override
 	protected void onStop()
 	{
@@ -300,7 +303,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		new GetCrimesTask(latLng, polyList);
 	}
 	
-	private void AddMapMarkers(String data)
+	private void addMapMarkers(String data)
 	{
 		Log.d(TAG, data);
 		for (Marker m : mMapMarkers)
@@ -314,18 +317,20 @@ OnConnectionFailedListener, LocationListener, Observer {
 			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList); 
 			final List<CombinedStreetCrimeData> combinedStreetCrimeDataList = new ArrayList<CombinedStreetCrimeData>(); // This list contains all data at the same location in one object
 			List<StreetCrimeData> removedData = new ArrayList<StreetCrimeData>();
-			// Loop through list to find duplicate locations, we'll merge these together
-			
+
+			if (crimesDataList.size() == 0)
+			{
+				Toast.makeText(this, "No crimes reported in that area with the supplied filters.", Toast.LENGTH_LONG).show();
+				return;
+			}
 			/*
 			 * TODO - This nested loop arrangement is really horrible...
 			 * Perhaps use an Iterator instead?
 			 */
-			
-			// Limit results to 1000 crimes
 			boolean hitCrimeLimit = false;
 			for (int i = 0; i < (crimesDataList.size() <= MAX_CRIMES_TO_DISPLAY ? crimesDataList.size() : MAX_CRIMES_TO_DISPLAY); i++)
 			{
-				if (i == 999 && crimesDataList.size() > 999)
+				if (i == MAX_CRIMES_TO_DISPLAY && crimesDataList.size() > MAX_CRIMES_TO_DISPLAY)
 					hitCrimeLimit = true;
 				
 				boolean wantToContinue = false;
@@ -404,11 +409,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 		catch (Exception e)
 		{
+			// TODO nicer exception handling for the user
 			e.printStackTrace();			
 		}
 	}
-	
-	
 	
 	@Override
 	public void onBackPressed()
@@ -428,35 +432,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 	}
 
 	@Override
-    public boolean onMarkerClick(Marker marker) 
-	{       
-		marker.showInfoWindow();
-		return true;
-    }
-	
-	@Override
-	public boolean onMyLocationButtonClick() {
-		
-		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-		double range = mMenuAdapter.getBarProgress() / 2D; // /2 to get radius of range rather than total range
-		//Log.d(TAG, "Range: " + Double.toString(range));
-		List<LatLng> polyList = new ArrayList<LatLng>();
-		
-		// Hardcoded way was ugly, this allows for easier modification
-		int precision = 8; // number of degree steps to take for the poly line
-		for (int i = 0; i < precision; i++)
-		{
-			int degrees = (360 / precision) * i;
-			polyList.add(LatLngHelper.findDestinationWithDistance(range, degrees, origin));
-		}
-
-		getCrimeData(origin, polyList);
-		
-		return false;
-	}
-
-	@Override
-	public void onConnectionFailed(ConnectionResult result) {
+	public void onConnectionFailed(ConnectionResult result) 
+	{
 		Log.e(TAG, "Connection Failed");
 		Toast.makeText(this, "Connection failed...", Toast.LENGTH_SHORT).show();
 	}
@@ -482,6 +459,23 @@ OnConnectionFailedListener, LocationListener, Observer {
 	public void onLocationChanged(Location loc) {
 		//Log.d(TAG, "LocationUpdated!");
 	}
+	
+	public void onSleuthButtonPressed(double range)
+	{
+		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
+		double pRange = range / 2D;
+		Log.i(TAG, Double.toString(pRange));
+		List<LatLng> polyList = new ArrayList<LatLng>();
+		
+		int precision = 8; // number of degree steps to take for the poly line
+		for (int i = 0; i < precision; i++)
+		{
+			int degrees = (360 / precision) * i;
+			polyList.add(LatLngHelper.findDestinationWithDistance(pRange, degrees, origin));
+		}
+
+		getCrimeData(origin, polyList);
+	}
 
 	@Override
 	public void update(Observable observable, Object data) 
@@ -489,7 +483,12 @@ OnConnectionFailedListener, LocationListener, Observer {
 		Notification pData = (Notification)data;
 		if (pData.isNotificationType(Notification.ADD_MAP_MARKERS))
 		{
-			this.AddMapMarkers((String)pData.get("serverData"));
+			addMapMarkers((String)pData.get("serverData"));
+		}
+		
+		if (pData.isNotificationType(Notification.SLEUTH_BUTTON_PRESSED))
+		{
+			onSleuthButtonPressed((Double)pData.get("range"));
 		}
 	}
 }

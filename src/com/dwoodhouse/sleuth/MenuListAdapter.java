@@ -17,16 +17,16 @@ import com.dwoodhouse.streetcrimes.R;
 public class MenuListAdapter extends BaseAdapter {
 
 	private final String TAG = "MenuListAdapter";
-	private Context context;
+	private Context mContext;
 	private String[] mTitle;
 	private String[] mSubTitle;
-	private LayoutInflater inflater;
+	private LayoutInflater mInflater;
 	private int mRangeBarProgress;
 
 	public MenuListAdapter(Context context, String[] title, String[] subtitle) {
-		this.context = context;
-		this.mTitle = title;
-		this.mSubTitle = subtitle;
+		mContext = context;
+		mTitle = title;
+		mSubTitle = subtitle;
 		mRangeBarProgress = 1;
 	}
 
@@ -54,72 +54,22 @@ public class MenuListAdapter extends BaseAdapter {
 		//ImageView imgIcon;
 		SeekBar rangeBar;
 
-		inflater = (LayoutInflater) context
+		mInflater = (LayoutInflater) mContext
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		final View itemView;
 		if (mTitle[position].equals("Search Range")) {
-			itemView = inflater.inflate(R.layout.drawer_seekbar_layout, parent,
+			itemView = mInflater.inflate(R.layout.drawer_seekbar_layout, parent,
 					false);
 			rangeBar = (SeekBar) itemView.findViewById(R.id.range_bar);
-			rangeBar.setOnTouchListener(new ListView.OnTouchListener() {
-
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					int action = event.getAction();
-
-					switch (action) {
-					case MotionEvent.ACTION_DOWN:
-						// Disallow Drawer to intercept touch events.
-						v.getParent().requestDisallowInterceptTouchEvent(true);
-						break;
-
-					case MotionEvent.ACTION_UP:
-						// Allow Drawer to intercept touch events.
-						v.getParent().requestDisallowInterceptTouchEvent(false);
-						break;
-					}
-
-					// Handle seekbar touch events.
-					v.onTouchEvent(event);
-					return true;
-				}
-			});
 			
-			rangeBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-
-				@Override
-				public void onProgressChanged(SeekBar seekBar, int progress,
-						boolean fromUser) {
-					mRangeBarProgress = seekBar.getProgress() + 1;
-					String s;
-					s = Integer.toString(mRangeBarProgress);
-					s += "Km";
-					
-					TextView tS = (TextView) itemView.findViewById(R.id.subtitle);
-					tS.setText(s);
-					
-					Log.i(TAG, s);
-				}
-
-				@Override
-				public void onStartTrackingTouch(SeekBar seekBar) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void onStopTrackingTouch(SeekBar seekBar) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-			});
+			
+			
 			
 		} 
 		else
 		{
-			itemView = inflater.inflate(R.layout.drawer_list_item, parent,false);
+			itemView = mInflater.inflate(R.layout.drawer_list_item, parent,false);
 		}
 			
 
