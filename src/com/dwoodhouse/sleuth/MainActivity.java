@@ -19,9 +19,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -70,16 +68,12 @@ OnConnectionFailedListener, LocationListener, Observer {
     
     LocationRequest mLocationRequest;
     
-    // ABS Navigation Drawer
-    private String[] title;
-	private String[] subtitle;
     private CharSequence mDrawerTitle;
 	private CharSequence mTitle;
     private DrawerLayout mDrawerLayout;
     private LinearLayout mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
-    private MenuListAdapter mMenuAdapter;
-    
+
     private Map<String, Float> mMarkerColourMap;
     public static Map<String, String> mMapMarkerTitleMap;
 
@@ -132,13 +126,8 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMapMarkerTitleMap.put("theft-from-the-person", "Theft From The Person");
         mMapMarkerTitleMap.put("vehicle-crime", "Vehicle Crime");
         mMapMarkerTitleMap.put("violent-crime", "Violent Crime");
-        mMapMarkerTitleMap.put("other-crime", "Other");
-        
-        title = new String[] 	{/*"Settings 1", "Settings 2", "Settings 3",*/ "Search Range"};
-        subtitle = new String[] {/*"subtitle 1", "subtitle 2", "subtitle 3",*/ "1km"};
-        mMenuAdapter = new MenuListAdapter(MainActivity.this, title, subtitle);        
-        // ActionBarDrawerToggle ties together the proper interactions
-     	// between the sliding drawer and the action bar app icon
+        mMapMarkerTitleMap.put("other-crime", "Other");   
+
         mDrawerToggle = new ActionBarDrawerToggle(
  				this,
  				mDrawerLayout,
@@ -146,7 +135,8 @@ OnConnectionFailedListener, LocationListener, Observer {
  				R.string.drawer_open,
  				R.string.drawer_close) {
 
- 			public void OnDrawerClosed(View view) {
+ 			@SuppressWarnings("unused")
+			public void OnDrawerClosed(View view) {
  				super.onDrawerClosed(view);
  			}
 

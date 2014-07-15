@@ -8,7 +8,6 @@ import java.util.Observer;
 public class ObservingService  
 {
 	private static ObservingService instance = null;
-	
 	private final static String TAG = "ObservingService";
 	Map<String, MyObserverable> observables;
 		
