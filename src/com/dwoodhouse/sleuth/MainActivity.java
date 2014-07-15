@@ -450,11 +450,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 		//Log.d(TAG, "LocationUpdated!");
 	}
 	
-	public void onSleuthButtonPressed(double range)
+	public void onSleuthButtonPressed(int range)
 	{
 		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-		double pRange = range / 2D;
-		Log.i(TAG, Double.toString(pRange));
+		float pRange = (float)range / 2.0f;
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		
 		int precision = 8; // number of degree steps to take for the poly line
@@ -478,7 +477,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		if (pData.isNotificationType(Notification.SLEUTH_BUTTON_PRESSED))
 		{
-			onSleuthButtonPressed((Double)pData.get("range"));
+			onSleuthButtonPressed((Integer)pData.get("range"));
 		}
 	}
 }

@@ -1,13 +1,13 @@
 package com.dwoodhouse.sleuth;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -21,13 +21,49 @@ public class NavigationDrawerHandler {
 	private SeekBar mRangeBar;
 	private int mRangeBarProgress;
 	
+	private RadioButton mRbMyLocation;
+	private RadioButton mRbPostcode;
+	
 	private Button mSleuthButton;
 
 	public NavigationDrawerHandler(LinearLayout layout) {
 		mDrawerLayout = layout;
 
 		initialiseRangeBar();
+		initialiseRadioButtons();
 		initialiseSleuthButton();
+	}
+
+	private void initialiseRadioButtons() 
+	{
+		mRbMyLocation = (RadioButton)mDrawerLayout.findViewById(R.id.radio_my_location);
+		mRbPostcode = (RadioButton)mDrawerLayout.findViewById(R.id.radio_by_postcode);
+		
+		mRbMyLocation.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onRadioButtonClicked(v);
+			}
+		});
+		
+		mRbPostcode.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onRadioButtonClicked(v);
+			}
+		});
+	}
+	
+	public void onRadioButtonClicked(View v)
+	{
+		switch (v.getId())
+		{
+		case R.id.radio_my_location:
+			break;
+			
+		case R.id.radio_by_postcode:
+			break;
+		}
 	}
 
 	private void initialiseSleuthButton() {
@@ -37,8 +73,7 @@ public class NavigationDrawerHandler {
 			@Override
 			public void onClick(View view) {
 				Notification n = new Notification();
-				double r = (double)mRangeBar.getProgress();
-				n.put("range", r);
+				n.put("range", mRangeBarProgress);
 				ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
 			}	
 		});
@@ -81,8 +116,6 @@ public class NavigationDrawerHandler {
 				
 				TextView tS = (TextView) mDrawerLayout.findViewById(R.id.range_bar_subtitle);
 				tS.setText(s);
-				
-				Log.i(TAG, s);
 			}
 
 			@Override
