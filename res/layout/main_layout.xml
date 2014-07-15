@@ -21,7 +21,7 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
         android:orientation="vertical" >
-        
+
         <RadioGroup
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,6 +40,12 @@
                 android:text="Search by postcode" />
         </RadioGroup>
 
+        <EditText
+            android:id="@+id/postcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/postal_address_hint" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,9 +57,9 @@
                 style="?attr/spinnerDropDownItemStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/range_bar_title"
                 android:ellipsize="end"
                 android:singleLine="true"
+                android:text="@string/range_bar_title"
                 android:textSize="20sp" />
 
             <SeekBar
@@ -67,21 +73,19 @@
                 style="?attr/spinnerDropDownItemStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/range_bar_subtitle"
                 android:ellipsize="end"
                 android:singleLine="true"
+                android:text="@string/range_bar_subtitle"
                 android:textSize="15sp" />
         </LinearLayout>
-        
+
         <Button
             android:id="@+id/button_sleuth"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="@string/button_sleuth" >
-            
         </Button>
-        
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

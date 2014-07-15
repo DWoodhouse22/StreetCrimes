@@ -1,17 +1,21 @@
 package com.dwoodhouse.sleuth;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -84,7 +88,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		// Initialisation
 		setContentView(R.layout.main_layout);
-		new NavigationDrawerHandler((LinearLayout)findViewById(R.id.drawer_list)); // create object to handle drawer input
+		
 		mTitle = mDrawerTitle = getTitle();
 		notifications = new ArrayList<String>();
 		mMapMarkers = new ArrayList<Marker>();
@@ -93,6 +97,9 @@ OnConnectionFailedListener, LocationListener, Observer {
         mLocationRequest = LocationRequest.create();
         mSharedPreferences = getSharedPreferences("SharedPreferences", Context.MODE_PRIVATE);
         mSharedPrefEditor = mSharedPreferences.edit();
+        
+        new NavigationDrawerHandler((LinearLayout)findViewById(R.id.drawer_list), mSharedPreferences); // create object to handle drawer input
+        
         mUpdatesRequested = true;
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerList = (LinearLayout)findViewById(R.id.drawer_list);
@@ -179,16 +186,9 @@ OnConnectionFailedListener, LocationListener, Observer {
         {
 			@Override
 			public boolean onMarkerClick(Marker marker) {
-				if (marker.isInfoWindowShown())
-				{
-					marker.hideInfoWindow();
-				}
-				else
-				{
-					marker.showInfoWindow();
-				}
+				marker.showInfoWindow();
 				
-				return false;
+				return true;
 			}
         });
         
@@ -452,7 +452,38 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	public void onSleuthButtonPressed(int range)
 	{
-		LatLng origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
+		// Basic code for postcode search
+		// No error handling, only basic code to illicit a result
+		Geocoder geoCoder = new Geocoder(this, Locale.getDefault());
+	    List<Address> address = null;
+	    double lat = 0;
+	    double lon = 0;
+	    
+	    LatLng origin;
+
+	    if (mSharedPreferences.getBoolean(NavigationDrawerHandler.KEY_SEARCH_MY_LOCATION, true))
+	    {
+	    	origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
+	    }
+	    else
+	    {
+	    	try 
+	    	{
+	            address = geoCoder.getFromLocationName(NavigationDrawerHandler.getPostcode(), 10);
+	        } catch (IOException e1) {
+	            e1.printStackTrace();
+	        }
+	        if (address.size() > 0) {
+	            Address first = address.get(0);
+	            lat = first.getLatitude();
+	            lon = first.getLongitude();
+	        }  
+	        
+	        origin = new LatLng(lat, lon);
+	    }
+	    
+	    Log.i(TAG, origin.toString());
+	   
 		float pRange = (float)range / 2.0f;
 		List<LatLng> polyList = new ArrayList<LatLng>();
 		

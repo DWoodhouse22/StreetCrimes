@@ -1,10 +1,12 @@
 package com.dwoodhouse.sleuth;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -16,8 +18,9 @@ import com.dwoodhouse.streetcrimes.R;
 
 public class NavigationDrawerHandler {
 
+	public static final String KEY_SEARCH_MY_LOCATION = "KEY_SEARCH_MY_LOCATION";
 	private final String TAG = "NavigationDrawerHandler";
-	LinearLayout mDrawerLayout;
+	private static LinearLayout mDrawerLayout;
 	private SeekBar mRangeBar;
 	private int mRangeBarProgress;
 	
@@ -25,10 +28,13 @@ public class NavigationDrawerHandler {
 	private RadioButton mRbPostcode;
 	
 	private Button mSleuthButton;
-
-	public NavigationDrawerHandler(LinearLayout layout) {
+	
+	private SharedPreferences mSharedPreferences;
+	private SharedPreferences.Editor mSharedPrefEditor;
+	public NavigationDrawerHandler(LinearLayout layout, SharedPreferences sharedPreferences) {
 		mDrawerLayout = layout;
-
+		mSharedPreferences = sharedPreferences;
+		mSharedPrefEditor = mSharedPreferences.edit();
 		initialiseRangeBar();
 		initialiseRadioButtons();
 		initialiseSleuthButton();
@@ -45,6 +51,8 @@ public class NavigationDrawerHandler {
 				onRadioButtonClicked(v);
 			}
 		});
+		mRbMyLocation.setChecked(true);
+		mSharedPrefEditor.putBoolean(KEY_SEARCH_MY_LOCATION, true).commit();
 		
 		mRbPostcode.setOnClickListener(new OnClickListener() {
 			@Override
@@ -59,11 +67,21 @@ public class NavigationDrawerHandler {
 		switch (v.getId())
 		{
 		case R.id.radio_my_location:
+			mSharedPrefEditor.putBoolean(KEY_SEARCH_MY_LOCATION, true);
 			break;
 			
 		case R.id.radio_by_postcode:
+			mSharedPrefEditor.putBoolean(KEY_SEARCH_MY_LOCATION, false);
 			break;
 		}
+		
+		mSharedPrefEditor.commit();
+	}
+	
+	public static String getPostcode()
+	{
+		EditText editText = (EditText)mDrawerLayout.findViewById(R.id.postcode);
+		return editText.getText().toString();
 	}
 
 	private void initialiseSleuthButton() {
