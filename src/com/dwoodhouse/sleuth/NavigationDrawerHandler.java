@@ -2,6 +2,7 @@ package com.dwoodhouse.sleuth;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,7 +20,7 @@ import com.dwoodhouse.streetcrimes.R;
 public class NavigationDrawerHandler {
 
 	public static final String KEY_SEARCH_MY_LOCATION = "KEY_SEARCH_MY_LOCATION";
-	private final String TAG = "NavigationDrawerHandler";
+	private static final String TAG = "NavigationDrawerHandler";
 	private static LinearLayout mDrawerLayout;
 	private SeekBar mRangeBar;
 	private int mRangeBarProgress;
@@ -81,7 +82,8 @@ public class NavigationDrawerHandler {
 	public static String getPostcode()
 	{
 		EditText editText = (EditText)mDrawerLayout.findViewById(R.id.postcode);
-		return editText.getText().toString();
+		Log.i(TAG, "Postcode: " + editText.getText().toString().trim());
+		return editText.getText().toString().trim();
 	}
 
 	private void initialiseSleuthButton() {
@@ -99,7 +101,7 @@ public class NavigationDrawerHandler {
 
 	private void initialiseRangeBar() {
 		mRangeBar = (SeekBar) mDrawerLayout.findViewById(R.id.range_bar);
-
+		mRangeBarProgress = 1;
 		mRangeBar.setOnTouchListener(new ListView.OnTouchListener() {
 			@SuppressLint("ClickableViewAccessibility")
 			@Override
@@ -130,7 +132,7 @@ public class NavigationDrawerHandler {
 				mRangeBarProgress = seekBar.getProgress() + 1;
 				String s;
 				s = Integer.toString(mRangeBarProgress);
-				s += "Km";
+				s += "km";
 				
 				TextView tS = (TextView) mDrawerLayout.findViewById(R.id.range_bar_subtitle);
 				tS.setText(s);

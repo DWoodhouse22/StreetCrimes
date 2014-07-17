@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Address;
@@ -23,6 +24,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -40,7 +42,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
-import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -142,8 +143,16 @@ OnConnectionFailedListener, LocationListener, Observer {
  				R.string.drawer_open,
  				R.string.drawer_close) {
 
- 			@SuppressWarnings("unused")
-			public void OnDrawerClosed(View view) {
+
+			public void onDrawerClosed(View view) {
+				Log.i(TAG, "Drawer Closed");
+				// If the keyboard was open during postcode entry, force it to hide.
+				InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+		        if (imm.isActive())
+		        {
+		            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+		        }
+		        
  				super.onDrawerClosed(view);
  			}
 
@@ -164,14 +173,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 		mMap.getUiSettings().setAllGesturesEnabled(true);
 		mMap.getUiSettings().setZoomControlsEnabled(false);
 		mMap.setMyLocationEnabled(true);
-		
-		mMap.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener()
-		{
-			@Override
-			public boolean onMyLocationButtonClick() {
-				return true;
-			}
-		});
 		
 		// Set initial map location to the last known location of this device.
 		Criteria criteria = new Criteria();
@@ -255,12 +256,13 @@ OnConnectionFailedListener, LocationListener, Observer {
 			mLocationClient.removeLocationUpdates(this);
 		}
 		
+		mLocationClient.disconnect();
+		
 		for (String s : notifications)
         {
         	ObservingService.getInstance().removeObserver(s, this);
         }
-		
-		mLocationClient.disconnect();
+
 		super.onStop();
 	}
 	
@@ -458,8 +460,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 	    List<Address> address = null;
 	    double lat = 0;
 	    double lon = 0;
-	    
-	    LatLng origin;
+	    boolean postcodeValid = false;
+	    LatLng origin = new LatLng(0,0);
 
 	    if (mSharedPreferences.getBoolean(NavigationDrawerHandler.KEY_SEARCH_MY_LOCATION, true))
 	    {
@@ -467,22 +469,37 @@ OnConnectionFailedListener, LocationListener, Observer {
 	    }
 	    else
 	    {
-	    	try 
+	    	if (!NavigationDrawerHandler.getPostcode().equals(""))
 	    	{
-	            address = geoCoder.getFromLocationName(NavigationDrawerHandler.getPostcode(), 10);
-	        } catch (IOException e1) {
-	            e1.printStackTrace();
-	        }
-	        if (address.size() > 0) {
-	            Address first = address.get(0);
-	            lat = first.getLatitude();
-	            lon = first.getLongitude();
-	        }  
-	        
-	        origin = new LatLng(lat, lon);
+		    	try 
+		    	{
+		    		address = geoCoder.getFromLocationName(NavigationDrawerHandler.getPostcode(), 10);
+		        } 
+		    	catch (IOException e) 
+		        {
+		            e.printStackTrace();
+		        }
+		    	
+		        if (address.size() > 0) 
+		        {
+		        	postcodeValid = true;
+		            Address add = address.get(0);
+		            lat = add.getLatitude();
+		            lon = add.getLongitude();
+		        }  
+		        
+		        origin = new LatLng(lat, lon);
+		    }
 	    }
 	    
-	    Log.i(TAG, origin.toString());
+	    
+	    if (!postcodeValid)
+	    {
+	    	Toast.makeText(this, "Please enter a valid postcode", Toast.LENGTH_SHORT).show();
+	    	return;
+	    }
+	    //Log.i(TAG, origin.toString());
+	    
 	   
 		float pRange = (float)range / 2.0f;
 		List<LatLng> polyList = new ArrayList<LatLng>();
@@ -494,6 +511,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 			polyList.add(LatLngHelper.findDestinationWithDistance(pRange, degrees, origin));
 		}
 
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
 		getCrimeData(origin, polyList);
 	}
 
