@@ -1,6 +1,10 @@
 package com.dwoodhouse.sleuth;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -118,14 +122,25 @@ public class NavigationDrawerHandler {
 		return editText.getText().toString().trim();
 	}
 	
+	public static
+	<T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
+	  List<T> list = new ArrayList<T>(c);
+	  java.util.Collections.sort(list);
+	  return list;
+	}
+	
 	private void initialiseCategoryBoxes()
 	{
 		LinearLayout catList = (LinearLayout) mDrawerLayout.findViewById(R.id.category_list);
 		
-		for (String categoryId : mMapMarkerTitleMap.keySet())
+		Collection<String> unsorted = mMapMarkerTitleMap.keySet();
+		List<String> sortedCatList = asSortedList(unsorted);
+		
+		for (String categoryId : sortedCatList)
 		{
+			Log.i(TAG, categoryId);
 			CheckBox box = new CheckBox(mContext);
-			box.setText(mMapMarkerTitleMap.get(categoryId));
+			box.setText( mMapMarkerTitleMap.get(categoryId));
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			box.setLayoutParams(params);
 			box.setTag(categoryId);

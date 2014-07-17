@@ -24,7 +24,7 @@ public class CombinedStreetCrimeData {
 	
 	private Map<String, Integer> mCrimeCategoryCount;
 	
-	public CombinedStreetCrimeData(StreetCrimeData nData, Activity context)
+	public CombinedStreetCrimeData(StreetCrimeData nData, Activity activity)
 	{
 		mCrimes = new ArrayList<StreetCrimeData>();
 		mCrimes.add(nData);
@@ -37,8 +37,7 @@ public class CombinedStreetCrimeData {
 		
 		mCrimeCategoryCount.put(mCategory, 1);
 		
-		
-		mActivity = context;
+		mActivity = activity;
 	}
 	
 	public void addCrimeData(StreetCrimeData nData)
