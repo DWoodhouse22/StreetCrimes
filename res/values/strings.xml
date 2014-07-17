@@ -8,4 +8,6 @@
 	<string name="range_bar_title">Search Range</string>
 	<string name="button_sleuth">Sleuth!</string>
 	<string name="postal_address_hint">Postcode</string>
+	<string name="search_by_postcode">Search by postcode</string>
+	<string name="search_my_location">Search my location</string>
 </resources>

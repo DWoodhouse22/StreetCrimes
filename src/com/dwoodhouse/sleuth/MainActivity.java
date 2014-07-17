@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Address;
@@ -129,13 +128,16 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 
 			public void onDrawerClosed(View view) {
-				Log.i(TAG, "Drawer Closed");
+				
 				// If the keyboard was open during postcode entry, force it to hide.
-				InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-		        if (imm.isActive())
-		        {
-		            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-		        }
+				InputMethodManager inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+
+				// check if no view has focus:
+				View v = getCurrentFocus();
+				if (v == null)
+					return;
+
+				inputManager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 		        
  				super.onDrawerClosed(view);
  			}

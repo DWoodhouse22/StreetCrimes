@@ -14,87 +14,101 @@
     <LinearLayout
         android:id="@+id/drawer_list"
         android:layout_width="280dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:background="#EEEEEE"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
+        
         android:orientation="vertical" >
 
-        <RadioGroup
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:layout_height="wrap_content" >
 
-            <RadioButton
-                android:id="@+id/radio_my_location"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Search my location" />
-
-            <RadioButton
-                android:id="@+id/radio_by_postcode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Search by postcode" />
-        </RadioGroup>
-
-        <EditText
-            android:id="@+id/postcode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/postal_address_hint" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/range_bar_title"
-                style="?attr/spinnerDropDownItemStyle"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:text="@string/range_bar_title"
-                android:textSize="20sp" />
+                android:orientation="vertical" >
 
-            <SeekBar
-                android:id="@+id/range_bar"
-                android:layout_width="240dp"
-                android:layout_height="wrap_content"
-                android:max="4" /> <!-- Default is 5km -->
+                <!-- SEEK BAR -->
 
-            <TextView
-                android:id="@+id/range_bar_subtitle"
-                style="?attr/spinnerDropDownItemStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:text="@string/range_bar_subtitle"
-                android:textSize="15sp" />
-        </LinearLayout>
-        
-        <LinearLayout
-            	android:id="@+id/category_list"
-            	android:layout_width="match_parent"
-            	android:layout_height="wrap_content"
-            	android:orientation="vertical" >
-            
-            
-        </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/button_sleuth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="@string/button_sleuth" >
-        </Button>
+                    <TextView
+                        android:id="@+id/range_bar_title"
+                        style="?attr/spinnerDropDownItemStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="@string/range_bar_title"
+                        android:textSize="20sp" />
+
+                    <SeekBar
+                        android:id="@+id/range_bar"
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:max="4" /> <!-- Default is 5km -->
+
+                    <TextView
+                        android:id="@+id/range_bar_subtitle"
+                        style="?attr/spinnerDropDownItemStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="@string/range_bar_subtitle"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" >
+
+                        <RadioButton
+                            android:id="@+id/radio_my_location"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/search_my_location" />
+
+                        <RadioButton
+                            android:id="@+id/radio_by_postcode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/search_by_postcode" />
+                    </RadioGroup>
+
+                    <EditText
+                        android:id="@+id/postcode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/postal_address_hint" />
+
+                    <LinearLayout
+                        android:id="@+id/category_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                    <Button
+                        android:id="@+id/button_sleuth"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:text="@string/button_sleuth" >
+                    </Button>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>
