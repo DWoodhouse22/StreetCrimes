@@ -85,7 +85,7 @@ public class CombinedStreetCrimeData {
         	TextView crimeInformation = (TextView) mActivity.getLayoutInflater().inflate(R.layout.info_window_information_item, null);
         	crimeList.addView(crimeInformation);
         	
-        	String tvString = MainActivity.mMapMarkerTitleMap.get(key);
+        	String tvString = NavigationDrawerHandler.mMapMarkerTitleMap.get(key);
     		tvString += ": ";
     		tvString += Integer.toString(mCrimeCategoryCount.get(key));
     		crimeInformation.setText(tvString);

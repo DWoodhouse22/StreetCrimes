@@ -80,7 +80,7 @@ OnConnectionFailedListener, LocationListener, Observer {
     private ActionBarDrawerToggle mDrawerToggle;
 
     private Map<String, Float> mMarkerColourMap;
-    public static Map<String, String> mMapMarkerTitleMap;
+    
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -99,7 +99,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mSharedPreferences = getSharedPreferences("SharedPreferences", Context.MODE_PRIVATE);
         mSharedPrefEditor = mSharedPreferences.edit();
         
-        new NavigationDrawerHandler((LinearLayout)findViewById(R.id.drawer_list), mSharedPreferences); // create object to handle drawer input
+        new NavigationDrawerHandler(this, (LinearLayout)findViewById(R.id.drawer_list), mSharedPreferences); // create object to handle drawer input
         
         mUpdatesRequested = true;
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -119,22 +119,6 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMarkerColourMap.put("vehicle-crime", BitmapDescriptorFactory.HUE_RED);
         mMarkerColourMap.put("violent-crime", BitmapDescriptorFactory.HUE_ROSE);
         mMarkerColourMap.put("other-crime", BitmapDescriptorFactory.HUE_YELLOW);
-        
-        mMapMarkerTitleMap = new HashMap<String, String>();
-        mMapMarkerTitleMap.put("anti-social-behaviour", "Anti Social Behaviour");
-        mMapMarkerTitleMap.put("bicycle-theft", "Theft - Bicycle");
-        mMapMarkerTitleMap.put("burglary", "Burglary");
-        mMapMarkerTitleMap.put("criminal-damage-arson", "Arson");
-        mMapMarkerTitleMap.put("drugs", "Drugs");
-        mMapMarkerTitleMap.put("other-theft", "Theft - Other");
-        mMapMarkerTitleMap.put("possession-of-weapons", "Weapons Possession");
-        mMapMarkerTitleMap.put("public-order", "Public Order");
-        mMapMarkerTitleMap.put("robbery", "Robbery");
-        mMapMarkerTitleMap.put("shoplifting", "Shoplifting");
-        mMapMarkerTitleMap.put("theft-from-the-person", "Theft From The Person");
-        mMapMarkerTitleMap.put("vehicle-crime", "Vehicle Crime");
-        mMapMarkerTitleMap.put("violent-crime", "Violent Crime");
-        mMapMarkerTitleMap.put("other-crime", "Other");   
 
         mDrawerToggle = new ActionBarDrawerToggle(
  				this,
@@ -465,6 +449,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 	    if (mSharedPreferences.getBoolean(NavigationDrawerHandler.KEY_SEARCH_MY_LOCATION, true))
 	    {
+	    	postcodeValid = true;
 	    	origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
 	    }
 	    else

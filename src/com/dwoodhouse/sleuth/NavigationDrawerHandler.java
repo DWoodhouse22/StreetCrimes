@@ -1,17 +1,23 @@
 package com.dwoodhouse.sleuth;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
@@ -29,15 +35,38 @@ public class NavigationDrawerHandler {
 	private RadioButton mRbPostcode;
 	
 	private Button mSleuthButton;
+	private Context mContext;
+	
+	public static Map<String, String> mMapMarkerTitleMap;
 	
 	private SharedPreferences mSharedPreferences;
 	private SharedPreferences.Editor mSharedPrefEditor;
-	public NavigationDrawerHandler(LinearLayout layout, SharedPreferences sharedPreferences) {
+	
+	public NavigationDrawerHandler(Context context, LinearLayout layout, SharedPreferences sharedPreferences) {
+		mContext = context;
 		mDrawerLayout = layout;
 		mSharedPreferences = sharedPreferences;
 		mSharedPrefEditor = mSharedPreferences.edit();
+		
+		mMapMarkerTitleMap = new HashMap<String, String>();
+        mMapMarkerTitleMap.put("anti-social-behaviour", "Anti Social Behaviour");
+        mMapMarkerTitleMap.put("bicycle-theft", "Theft - Bicycle");
+        mMapMarkerTitleMap.put("burglary", "Burglary");
+        mMapMarkerTitleMap.put("criminal-damage-arson", "Arson");
+        mMapMarkerTitleMap.put("drugs", "Drugs");
+        mMapMarkerTitleMap.put("other-theft", "Theft - Other");
+        mMapMarkerTitleMap.put("possession-of-weapons", "Weapons Possession");
+        mMapMarkerTitleMap.put("public-order", "Public Order");
+        mMapMarkerTitleMap.put("robbery", "Robbery");
+        mMapMarkerTitleMap.put("shoplifting", "Shoplifting");
+        mMapMarkerTitleMap.put("theft-from-the-person", "Theft From The Person");
+        mMapMarkerTitleMap.put("vehicle-crime", "Vehicle Crime");
+        mMapMarkerTitleMap.put("violent-crime", "Violent Crime");
+        mMapMarkerTitleMap.put("other-crime", "Other");
+        
 		initialiseRangeBar();
 		initialiseRadioButtons();
+		initialiseCategoryBoxes();
 		initialiseSleuthButton();
 	}
 
@@ -84,6 +113,20 @@ public class NavigationDrawerHandler {
 		EditText editText = (EditText)mDrawerLayout.findViewById(R.id.postcode);
 		Log.i(TAG, "Postcode: " + editText.getText().toString().trim());
 		return editText.getText().toString().trim();
+	}
+	
+	private void initialiseCategoryBoxes()
+	{
+		LinearLayout catList = (LinearLayout) mDrawerLayout.findViewById(R.id.category_list);
+		
+		for (String categoryId : mMapMarkerTitleMap.keySet())
+		{
+			CheckBox box = new CheckBox(mContext);
+			box.setText(mMapMarkerTitleMap.get(categoryId));
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			box.setLayoutParams(params);
+			catList.addView(box);
+		}
 	}
 
 	private void initialiseSleuthButton() {
