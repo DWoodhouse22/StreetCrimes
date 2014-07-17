@@ -17,7 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:background="#EEEEEE"
-        
         android:orientation="vertical" >
 
         <ScrollView
@@ -34,7 +33,6 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
                     android:orientation="vertical" >
 
                     <TextView
@@ -42,15 +40,18 @@
                         style="?attr/spinnerDropDownItemStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
                         android:ellipsize="end"
+                        android:gravity="center"
                         android:singleLine="true"
                         android:text="@string/range_bar_title"
                         android:textSize="20sp" />
 
                     <SeekBar
                         android:id="@+id/range_bar"
-                        android:layout_width="240dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:max="4" /> <!-- Default is 5km -->
 
                     <TextView
@@ -97,7 +98,17 @@
                         android:id="@+id/category_list"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical" />
+                        android:orientation="vertical" 
+                        android:layout_marginTop="10dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:text="@string/show_these_categories"
+                            android:textSize="20sp" />
+                    </LinearLayout>
 
                     <Button
                         android:id="@+id/button_sleuth"

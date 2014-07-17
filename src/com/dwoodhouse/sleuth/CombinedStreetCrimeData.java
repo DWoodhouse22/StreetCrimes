@@ -69,6 +69,11 @@ public class CombinedStreetCrimeData {
 	{
 		return mCategory;
 	}
+	
+	public boolean doesContainMixtureOfCategories()
+	{
+		return mCrimeCategoryCount.keySet().size() > 1;
+	}
 
 	public View getView() {
 		View windowLayout = mActivity.getLayoutInflater().inflate(R.layout.map_custom_info_window, null);

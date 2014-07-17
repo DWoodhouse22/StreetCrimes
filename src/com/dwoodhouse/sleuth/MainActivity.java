@@ -107,7 +107,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMarkerColourMap.put("anti-social-behaviour", BitmapDescriptorFactory.HUE_AZURE);
         mMarkerColourMap.put("bicycle-theft", BitmapDescriptorFactory.HUE_BLUE);
         mMarkerColourMap.put("burglary", BitmapDescriptorFactory.HUE_BLUE);
-        mMarkerColourMap.put("criminal-damage-arson", BitmapDescriptorFactory.HUE_CYAN);
+        mMarkerColourMap.put("criminal-damage-arson", BitmapDescriptorFactory.HUE_RED);
         mMarkerColourMap.put("drugs", BitmapDescriptorFactory.HUE_GREEN);
         mMarkerColourMap.put("other-theft", BitmapDescriptorFactory.HUE_BLUE);
         mMarkerColourMap.put("possession-of-weapons", BitmapDescriptorFactory.HUE_MAGENTA);
@@ -115,7 +115,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mMarkerColourMap.put("robbery", BitmapDescriptorFactory.HUE_BLUE);
         mMarkerColourMap.put("shoplifting", BitmapDescriptorFactory.HUE_BLUE);
         mMarkerColourMap.put("theft-from-the-person", BitmapDescriptorFactory.HUE_BLUE);
-        mMarkerColourMap.put("vehicle-crime", BitmapDescriptorFactory.HUE_RED);
+        mMarkerColourMap.put("vehicle-crime", BitmapDescriptorFactory.HUE_CYAN);
         mMarkerColourMap.put("violent-crime", BitmapDescriptorFactory.HUE_ROSE);
         mMarkerColourMap.put("other-crime", BitmapDescriptorFactory.HUE_YELLOW);
 
@@ -292,11 +292,20 @@ OnConnectionFailedListener, LocationListener, Observer {
 		try 
 		{
 			List<StreetCrimeData> crimesDataList = new LinkedList<StreetCrimeData>(Arrays.asList(new Gson().fromJson(data, StreetCrimeData[].class))); // convert the array into a list, more flexible.
-			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList); 
 			final List<CombinedStreetCrimeData> combinedStreetCrimeDataList = new ArrayList<CombinedStreetCrimeData>(); // This list contains all data at the same location in one object
 			List<StreetCrimeData> removedData = new ArrayList<StreetCrimeData>();
-
-			if (crimesDataList.size() == 0)
+			
+			// Remove unwanted crimes from the response
+			for (int i = crimesDataList.size() - 1; i >= 0; i--)
+			{
+				if (!NavigationDrawerHandler.mCategoriesToShow.get(crimesDataList.get(i).getCategory()))
+				{
+					crimesDataList.remove(crimesDataList.get(i));
+				}
+			}
+			
+			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList);
+			if (crimesDataListCopy.size() == 0)
 			{
 				Toast.makeText(this, "No crimes reported in that area with the supplied filters.", Toast.LENGTH_LONG).show();
 				return;
@@ -352,7 +361,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 				final Marker newMarker = mMap.addMarker(new MarkerOptions()
 					.position(loc)
 					.snippet(nData.getmLocationName())
-					.icon(BitmapDescriptorFactory.defaultMarker(nData.getmCrimes().size() > 1 ? BitmapDescriptorFactory.HUE_VIOLET : mMarkerColourMap.get(nData.getmCategory()))));
+					.icon(BitmapDescriptorFactory.defaultMarker(nData.doesContainMixtureOfCategories() ? BitmapDescriptorFactory.HUE_VIOLET : mMarkerColourMap.get(nData.getmCategory()))));
 
 					mMapMarkers.add(newMarker);
 				
