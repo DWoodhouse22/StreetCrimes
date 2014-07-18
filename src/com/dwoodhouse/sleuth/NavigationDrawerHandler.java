@@ -122,6 +122,8 @@ public class NavigationDrawerHandler {
 		return editText.getText().toString().trim();
 	}
 	
+	
+	// Shamelessly stole this from the internet
 	public static
 	<T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
 	  List<T> list = new ArrayList<T>(c);
