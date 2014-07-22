@@ -12,6 +12,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Criteria;
@@ -79,14 +80,17 @@ OnConnectionFailedListener, LocationListener, Observer {
     private ActionBarDrawerToggle mDrawerToggle;
 
     private Map<String, Float> mMarkerColourMap;
+    private ArrayList<DateManager> nAvailableDates;
     
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		Intent i = getIntent();
+		String dates = (String) i.getExtras().get("dates");
+		nAvailableDates = new ArrayList<DateManager>(Arrays.asList(new Gson().fromJson(dates, DateManager[].class)));
 		
-		// Initialisation
 		setContentView(R.layout.main_layout);
 		
 		mTitle = mDrawerTitle = getTitle();
@@ -165,7 +169,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
 		String provider = locationManager.getBestProvider(criteria, true);
 		Location location = locationManager.getLastKnownLocation(provider);
-		LatLng initialLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+		LatLng initialLatLng = location == null ? new LatLng(0,0) : new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLatLng, 13));  
 
         // Set a click listener for the markers to display the position overlay

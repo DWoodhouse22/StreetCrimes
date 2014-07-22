@@ -50,10 +50,6 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 		try {
 			// TODO handle time outs!
 			BufferedReader in;
-			// http://data.police.uk/api/crimes-street/all-crime?poly=52.268,0.543:52.794,0.238:52.130,0.478&date=2013-01
-
-			Log.d(TAG, requestURL);
-
 			HttpClient httpclient = new DefaultHttpClient();
 
 			// Set up the Http request
@@ -64,8 +60,7 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 			// Try and get a response
 			HttpResponse response = httpclient.execute(request);
 			// Read data received from the request
-			in = new BufferedReader(new InputStreamReader(response.getEntity()
-					.getContent()));
+			in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 			String line = in.readLine();
 
 			return line;

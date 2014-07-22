@@ -118,7 +118,6 @@ public class NavigationDrawerHandler {
 	public static String getPostcode()
 	{
 		EditText editText = (EditText)mDrawerLayout.findViewById(R.id.postcode);
-		Log.i(TAG, "Postcode: " + editText.getText().toString().trim());
 		return editText.getText().toString().trim();
 	}
 	
