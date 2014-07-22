@@ -21,6 +21,8 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.dwoodhouse.streetcrimes.R;
+
 public class SplashScreenActivity extends Activity {
 
 	private final String TAG = "SplashScreenActivity";
@@ -29,6 +31,7 @@ public class SplashScreenActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);	
+		setContentView(R.layout.splash_layout);
 		mContext = this;
 		
 		/*new Handler().postDelayed(new Runnable() 

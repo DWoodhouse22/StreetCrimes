@@ -93,7 +93,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		setContentView(R.layout.main_layout);
 		
-		mTitle = mDrawerTitle = getTitle();
+		getSupportActionBar().setTitle("Menu");
+		//mTitle = mDrawerTitle = getTitle();
 		notifications = new ArrayList<String>();
 		mMapMarkers = new ArrayList<Marker>();
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
@@ -147,8 +148,6 @@ OnConnectionFailedListener, LocationListener, Observer {
  			}
 
  			public void onDrawerOpened(View drawerView) {
- 				// Set the title on the action when drawer open
- 				getSupportActionBar().setTitle(mDrawerTitle);
  				super.onDrawerOpened(drawerView);
  			}
  		};
@@ -419,7 +418,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 		
 		// if no info window open, close the app.
-		super.onBackPressed();
+		System.exit(0);
 	}
 
 	@Override
