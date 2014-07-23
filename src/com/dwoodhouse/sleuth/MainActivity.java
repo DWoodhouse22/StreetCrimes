@@ -14,6 +14,7 @@ import java.util.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
@@ -286,7 +288,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	private void addMapMarkers(String data)
 	{
-		Log.d(TAG, data);
+		
+		//Log.d(TAG, data);
 		for (Marker m : mMapMarkers)
 		{
 			m.remove();
@@ -396,12 +399,20 @@ OnConnectionFailedListener, LocationListener, Observer {
 		            }
 		        });
 			}
+			
+			mDrawerLayout.closeDrawer(Gravity.LEFT);
 		}
 		catch (Exception e)
 		{
 			// TODO nicer exception handling for the user
 			e.printStackTrace();			
 		}
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+		super.onConfigurationChanged(newConfig);
 	}
 	
 	@Override
@@ -413,12 +424,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 			if (m.isInfoWindowShown())
 			{
 				m.hideInfoWindow();
-				return;
 			}
 		}
-		
-		// if no info window open, close the app.
-		System.exit(0);
 	}
 
 	@Override

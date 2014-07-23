@@ -6,7 +6,7 @@
     <string name="menu_content_description">Menu Icon</string>
     <string name="range_bar_subtitle">1km</string>
 	<string name="range_bar_title">Search Area</string>
-	<string name="button_sleuth">Sleuth!</string>
+	<string name="button_sleuth">Tap to Sleuth!</string>
 	<string name="postal_address_hint">Postcode</string>
 	<string name="search_by_postcode">Around this postcode</string>
 	<string name="search_my_location">Around my location</string>

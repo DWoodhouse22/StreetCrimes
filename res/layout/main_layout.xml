@@ -21,7 +21,8 @@
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="0dp"
+            android:layout_weight="1" >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -98,8 +99,8 @@
                         android:id="@+id/category_list"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical" 
-                        android:layout_marginTop="10dp">
+                        android:layout_marginTop="10dp"
+                        android:orientation="vertical" >
 
                         <TextView
                             android:layout_width="match_parent"
@@ -109,17 +110,23 @@
                             android:text="@string/show_these_categories"
                             android:textSize="20sp" />
                     </LinearLayout>
-
-                    <Button
-                        android:id="@+id/button_sleuth"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:text="@string/button_sleuth" >
-                    </Button>
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/button_sleuth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/button_sleuth" >
+            </Button>
+        </LinearLayout>
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

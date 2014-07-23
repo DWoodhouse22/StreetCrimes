@@ -139,7 +139,7 @@ public class NavigationDrawerHandler {
 		
 		for (String categoryId : sortedCatList)
 		{
-			Log.i(TAG, categoryId);
+			//Log.i(TAG, categoryId);
 			CheckBox box = new CheckBox(mContext);
 			box.setText( mMapMarkerTitleMap.get(categoryId));
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);

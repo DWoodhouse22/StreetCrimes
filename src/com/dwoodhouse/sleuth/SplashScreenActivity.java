@@ -33,37 +33,21 @@ public class SplashScreenActivity extends Activity {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.splash_layout);
 		mContext = this;
-		
-		/*new Handler().postDelayed(new Runnable() 
-		{
-            @Override
-            public void run() 
-            {
-            	//overridePendingTransition(R.anim.push_right_in, R.anim.push_right_out);
-            	Intent i = new Intent(SplashScreenActivity.this, MainActivity.class);
-            	//i.putExtra("dates", response);
-            	startActivity(i);
-            }
-        }, 1500); */
 	}
 	
 	@Override
 	protected void onStart()
 	{
-		new GetDatesTask();
+		new GetDatesTask().execute();
 		
 		super.onStart();
 	}
 	
-	private class GetDatesTask extends AsyncTask<String, Void, String>
+	private class GetDatesTask extends AsyncTask<Void, Void, String>
 	{
-		public GetDatesTask()
-		{
-			Log.i(TAG, "GetDatesTask Constructor");
-			execute();
-		}
+
 		@Override
-		protected String doInBackground(String... params) {
+		protected String doInBackground(Void... params) {
 			try
 			{
 				HttpParams httpParams = new BasicHttpParams();
@@ -96,12 +80,12 @@ public class SplashScreenActivity extends Activity {
 		
 		protected void onPreExecute()
 		{
-			Toast.makeText(mContext, "Setting up...", Toast.LENGTH_LONG).show();
+			//Toast.makeText(mContext, "Setting up...", Toast.LENGTH_LONG).show();
 		}
 		
 		protected void onPostExecute(final String response)
 		{
-			Toast.makeText(mContext, "Launching...", Toast.LENGTH_SHORT).show();
+			//Toast.makeText(mContext, "Launching...", Toast.LENGTH_SHORT).show();
 			new Handler().postDelayed(new Runnable() 
 			{
 	            @Override
