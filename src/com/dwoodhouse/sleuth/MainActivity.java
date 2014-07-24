@@ -180,7 +180,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 			public boolean onMarkerClick(Marker marker) {
 				marker.showInfoWindow();
 				
-				return true;
+				return false;
 			}
         });
         
@@ -426,18 +426,23 @@ OnConnectionFailedListener, LocationListener, Observer {
 				m.hideInfoWindow();
 			}
 		}
+		
+		if (mDrawerLayout.isDrawerOpen(Gravity.LEFT))
+		{
+			mDrawerLayout.closeDrawer(Gravity.LEFT);
+		}
 	}
 
 	@Override
 	public void onConnectionFailed(ConnectionResult result) 
 	{
 		Log.e(TAG, "Connection Failed");
-		Toast.makeText(this, "Connection failed...", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, "Connection failed...", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public void onConnected(Bundle bundle) {
-		Toast.makeText(this, "Connected to location service", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, "Connected to location service", Toast.LENGTH_SHORT).show();
 		Log.i(TAG, "Connected to service, " + Boolean.toString(mUpdatesRequested));
 		
 		if (mUpdatesRequested) 
@@ -449,7 +454,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 	@Override
 	public void onDisconnected() {
 		Log.e(TAG, "Connection to location service lost");
-		Toast.makeText(this, "Connection to location service lost", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, "Connection to location service lost", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override

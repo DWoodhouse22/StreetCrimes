@@ -15,10 +15,13 @@ import org.apache.http.params.HttpParams;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.dwoodhouse.streetcrimes.R;
@@ -27,11 +30,23 @@ public class SplashScreenActivity extends Activity {
 
 	private final String TAG = "SplashScreenActivity";
 	private Context mContext;
+	private AnimationDrawable loadingAnim;
+	private ImageView loadingView;
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.splash_layout);
+		
+		loadingAnim = new AnimationDrawable();
+		loadingView = (ImageView)findViewById(R.id.loading_image);
+		for (int i = 0; i < 8; i++)
+		{
+			Drawable frame = getResources().getDrawable(getResources().getIdentifier("frame_00" + i, "drawable", getPackageName()));
+			loadingAnim.addFrame(frame, 125);
+		}
+		loadingAnim.setOneShot(false);
+		loadingView.setBackgroundDrawable(loadingAnim);
 		mContext = this;
 	}
 	
@@ -80,7 +95,7 @@ public class SplashScreenActivity extends Activity {
 		
 		protected void onPreExecute()
 		{
-			//Toast.makeText(mContext, "Setting up...", Toast.LENGTH_LONG).show();
+			loadingAnim.start();
 		}
 		
 		protected void onPostExecute(final String response)
@@ -96,6 +111,7 @@ public class SplashScreenActivity extends Activity {
 	            	if (!response.equals("Error!"));
 	            		i.putExtra("dates", response);
 	            		
+	            	loadingAnim.stop();
 	            	startActivity(i);
 	            }
 	        }, 3000); 

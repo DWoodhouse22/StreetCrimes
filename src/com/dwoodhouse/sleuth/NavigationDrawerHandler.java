@@ -68,7 +68,7 @@ public class NavigationDrawerHandler {
         mMapMarkerTitleMap.put("theft-from-the-person", "Theft From The Person");
         mMapMarkerTitleMap.put("vehicle-crime", "Vehicle Crime");
         mMapMarkerTitleMap.put("violent-crime", "Violent Crime");
-        mMapMarkerTitleMap.put("possession-of-weapons", "Weapons Possession");
+        mMapMarkerTitleMap.put("possession-of-weapons", "Possession Of Weapons");
         mMapMarkerTitleMap.put("other-crime", "Other");
         
 		initialiseRangeBar();
