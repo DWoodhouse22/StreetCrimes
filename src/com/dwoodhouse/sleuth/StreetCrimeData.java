@@ -24,8 +24,6 @@ public class StreetCrimeData {
         "month": "2013-01"
     }
  */
-	
-	// Gson creates objects out of JSON arrays!  Plug in required variable names here and Gson will automatically create the object for us
     
 	private String category;
 	private LocationData location;

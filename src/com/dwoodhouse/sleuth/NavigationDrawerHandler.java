@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,7 +32,7 @@ import android.widget.TextView;
 
 import com.dwoodhouse.streetcrimes.R;
 
-public class NavigationDrawerHandler {
+public class NavigationDrawerHandler implements Observer {
 
 	public static final String KEY_SEARCH_MY_LOCATION = "KEY_SEARCH_MY_LOCATION";
 	private static final String TAG = "NavigationDrawerHandler";
@@ -44,6 +48,43 @@ public class NavigationDrawerHandler {
 	
 	private Button mSleuthButton;
 	private Context mContext;
+	private Activity mActivity;
+	
+	// Controls the update of the sleuth button text for some user feedback
+	private boolean mSleuthing = false;
+	private final int UPDATE_DELAY = 200;
+	private final String[] mSleuthUpdateText = new String[] {"Sleuthing", "Sleuthing.", "Sleuthing..", "Sleuthing..."};
+	private int mSleuthUpdateCount = 0;
+	private Handler mSleuthButtonUpdateHandler;
+	private Runnable mSleuthButtonUpdateRunnable = new Runnable()
+	{
+		@Override
+		public void run() 
+		{
+			mActivity.runOnUiThread(new Runnable()
+			{
+				@Override
+				public void run() {
+					if (mSleuthing)
+						mSleuthButton.setText(mSleuthUpdateText[mSleuthUpdateCount]);
+					else
+						mSleuthButton.setText(R.string.button_sleuth);
+					mSleuthButton.invalidate();
+				}
+			});
+			
+			mSleuthUpdateCount++;
+			if (mSleuthUpdateCount > 3)
+			{
+				mSleuthUpdateCount = 0;
+			}
+			
+			if (mSleuthing)
+			{
+				mSleuthButtonUpdateHandler.postDelayed(mSleuthButtonUpdateRunnable, UPDATE_DELAY);
+			}
+		}	
+	};
 	
 	public static HashMap<String, String> mMapMarkerTitleMap;
 	public static HashMap<String, Boolean> mCategoriesToShow;
@@ -53,12 +94,17 @@ public class NavigationDrawerHandler {
 	
 	public NavigationDrawerHandler(Context context, LinearLayout layout, SharedPreferences sharedPreferences, ArrayList<DateManager> availableDates) {
 		mContext = context;
+		mActivity = (Activity) context;
 		mDrawerLayout = layout;
 		mSharedPreferences = sharedPreferences;
 		nAvailableDates = availableDates;
 		mSharedPrefEditor = mSharedPreferences.edit();
 		mCategoriesToShow = new HashMap<String, Boolean>();
 		mMapMarkerTitleMap = new HashMap<String, String>();
+		
+		ObservingService.getInstance().addObserver(Notification.ADD_MAP_MARKERS, this);
+		
+		mSleuthButtonUpdateHandler = new Handler();
 		
         mMapMarkerTitleMap.put("anti-social-behaviour", "Anti Social Behaviour");
         mMapMarkerTitleMap.put("criminal-damage-arson", "Arson");
@@ -184,11 +230,16 @@ public class NavigationDrawerHandler {
 		mSleuthButton.setOnClickListener(new OnClickListener() {
 
 			@Override
-			public void onClick(View view) {
+			public void onClick(View view) 
+			{
+				mSleuthButton.setEnabled(false);
 				Notification n = new Notification();
 				n.put("range", mRangeBarProgress);
 				n.put("date", mDateSpinner.getSelectedItem());
 				ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
+				
+				mSleuthing = true;
+				mSleuthButtonUpdateHandler.post(mSleuthButtonUpdateRunnable);
 			}	
 		});
 	}
@@ -242,5 +293,26 @@ public class NavigationDrawerHandler {
 				// TODO Auto-generated method stub
 			}
 		});
+	}
+
+	@Override
+	public void update(Observable observable, Object data)
+	{
+		Notification pData = (Notification)data;
+		if (pData.isNotificationType(Notification.ADD_MAP_MARKERS))
+		{
+			mSleuthing = false;
+			mSleuthButton.setEnabled(true);
+			mSleuthUpdateCount = 0;
+			mActivity.runOnUiThread(new Runnable()
+			{
+				@Override
+				public void run() 
+				{
+					mSleuthButton.setText(R.string.button_sleuth);
+					mSleuthButton.invalidate();
+				}
+			});
+		}
 	}
 }

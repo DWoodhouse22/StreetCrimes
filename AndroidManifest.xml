@@ -43,17 +43,17 @@
             android:value="@integer/google_play_services_version" />
 
         <!-- RELEASE -->
-
+<!-- 
          <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDAGpo_1Vh69wzcZrv6F2dF9GGIAwqufk8" />
-
+-->
         <!-- MBP DEBUG -->
-        <!-- 
+        
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyAkA3tqYHFGAsTO6sEzu54eteGiqeSW_PQ" />
-		-->
+		
         <!-- iMac -->
         <!--
              <meta-data 

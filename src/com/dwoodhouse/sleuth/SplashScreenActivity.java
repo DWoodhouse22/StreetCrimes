@@ -13,7 +13,6 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
@@ -22,14 +21,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.dwoodhouse.streetcrimes.R;
 
 public class SplashScreenActivity extends Activity {
 
 	private final String TAG = "SplashScreenActivity";
-	private Context mContext;
 	private AnimationDrawable loadingAnim;
 	private ImageView loadingView;
 	@Override
@@ -47,7 +44,6 @@ public class SplashScreenActivity extends Activity {
 		}
 		loadingAnim.setOneShot(false);
 		loadingView.setBackgroundDrawable(loadingAnim);
-		mContext = this;
 	}
 	
 	@Override
