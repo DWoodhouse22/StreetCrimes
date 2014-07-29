@@ -21,12 +21,13 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 	private List<LatLng> mPolyList;
 	String requestURL;
 
-	public GetCrimesTask(LatLng origin, List<LatLng> polyList) {
+	public GetCrimesTask(LatLng origin, List<LatLng> polyList, String date) {
 		mPolyList = polyList;
 
 		requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
 		requestURL += getPoly(mPolyList);
-		requestURL += "&date=2014-05";
+		requestURL += "&date=";
+		requestURL += date;
 
 		// Start the task
 		execute();

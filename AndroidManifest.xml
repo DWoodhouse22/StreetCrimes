@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dwoodhouse.streetcrimes"
-    android:versionCode="5"
-    android:versionName="0.71" >
+    android:versionCode="8"
+    android:versionName="0.8" >
 
     <uses-sdk
         android:minSdkVersion="12"
@@ -43,10 +43,11 @@
             android:value="@integer/google_play_services_version" />
 
         <!-- RELEASE -->
+
          <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDAGpo_1Vh69wzcZrv6F2dF9GGIAwqufk8" />
-		 
+
         <!-- MBP DEBUG -->
         <!-- 
         <meta-data

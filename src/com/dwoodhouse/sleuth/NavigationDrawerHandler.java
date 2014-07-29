@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -24,6 +23,7 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dwoodhouse.streetcrimes.R;
@@ -35,6 +35,9 @@ public class NavigationDrawerHandler {
 	private static LinearLayout mDrawerLayout;
 	private SeekBar mRangeBar;
 	private int mRangeBarProgress;
+	
+	private Spinner mDateSpinner;
+	private ArrayList<DateManager> nAvailableDates;
 	
 	private RadioButton mRbMyLocation;
 	private RadioButton mRbPostcode;
@@ -48,10 +51,11 @@ public class NavigationDrawerHandler {
 	private SharedPreferences mSharedPreferences;
 	private SharedPreferences.Editor mSharedPrefEditor;
 	
-	public NavigationDrawerHandler(Context context, LinearLayout layout, SharedPreferences sharedPreferences) {
+	public NavigationDrawerHandler(Context context, LinearLayout layout, SharedPreferences sharedPreferences, ArrayList<DateManager> availableDates) {
 		mContext = context;
 		mDrawerLayout = layout;
 		mSharedPreferences = sharedPreferences;
+		nAvailableDates = availableDates;
 		mSharedPrefEditor = mSharedPreferences.edit();
 		mCategoriesToShow = new HashMap<String, Boolean>();
 		mMapMarkerTitleMap = new HashMap<String, String>();
@@ -72,6 +76,7 @@ public class NavigationDrawerHandler {
         mMapMarkerTitleMap.put("other-crime", "Other");
         
 		initialiseRangeBar();
+		initialiseDateSpinner();
 		initialiseRadioButtons();
 		initialiseCategoryBoxes();
 		initialiseSleuthButton();
@@ -97,6 +102,20 @@ public class NavigationDrawerHandler {
 				onRadioButtonClicked(v);
 			}
 		});
+	}
+	
+	private void initialiseDateSpinner()
+	{
+		mDateSpinner = (Spinner) mDrawerLayout.findViewById(R.id.date_spinner);
+		ArrayList<String> dates = new ArrayList<String>();
+		for (DateManager dm : nAvailableDates)
+		{
+			dates.add(dm.getDate());
+		}
+		
+		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, dates);
+		mDateSpinner.setAdapter(spinnerArrayAdapter);
+
 	}
 	
 	public void onRadioButtonClicked(View v)
@@ -168,6 +187,7 @@ public class NavigationDrawerHandler {
 			public void onClick(View view) {
 				Notification n = new Notification();
 				n.put("range", mRangeBarProgress);
+				n.put("date", mDateSpinner.getSelectedItem());
 				ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
 			}	
 		});

@@ -75,7 +75,6 @@ OnConnectionFailedListener, LocationListener, Observer {
     
     LocationRequest mLocationRequest;
     
-    private CharSequence mDrawerTitle;
 	private CharSequence mTitle;
     private DrawerLayout mDrawerLayout;
     private LinearLayout mDrawerList;
@@ -93,6 +92,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 		String dates = (String) i.getExtras().get("dates");
 		nAvailableDates = new ArrayList<DateManager>(Arrays.asList(new Gson().fromJson(dates, DateManager[].class)));
 		
+		for (DateManager s : nAvailableDates)
+		{
+			Log.d(TAG, s.getDate());
+		}
 		setContentView(R.layout.main_layout);
 		
 		getSupportActionBar().setTitle("Menu");
@@ -105,7 +108,7 @@ OnConnectionFailedListener, LocationListener, Observer {
         mSharedPreferences = getSharedPreferences("SharedPreferences", Context.MODE_PRIVATE);
         mSharedPrefEditor = mSharedPreferences.edit();
         
-        new NavigationDrawerHandler(this, (LinearLayout)findViewById(R.id.drawer_list), mSharedPreferences); // create object to handle drawer input
+        new NavigationDrawerHandler(this, (LinearLayout)findViewById(R.id.drawer_list), mSharedPreferences, nAvailableDates); // create object to handle drawer input
         
         mUpdatesRequested = true;
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -280,12 +283,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		super.onResume();
 	}
-           
-	private void getCrimeData(LatLng latLng, List<LatLng> polyList)
-	{
-		new GetCrimesTask(latLng, polyList);
-	}
-	
+
 	private void addMapMarkers(String data)
 	{
 		
@@ -318,7 +316,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 			}
 			/*
 			 * TODO - This nested loop arrangement is really horrible...
-			 * Perhaps use an Iterator instead?
 			 */
 			boolean hitCrimeLimit = false;
 			for (int i = 0; i < (crimesDataList.size() <= MAX_CRIMES_TO_DISPLAY ? crimesDataList.size() : MAX_CRIMES_TO_DISPLAY); i++)
@@ -362,8 +359,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 			for (final CombinedStreetCrimeData nData : combinedStreetCrimeDataList)
 			{
 				LatLng loc = nData.getmLocation();
-				
-				// TODO combine markers at the same location into one and add this information to the infoWindow
+
 				final Marker newMarker = mMap.addMarker(new MarkerOptions()
 					.position(loc)
 					.snippet(nData.getmLocationName())
@@ -462,7 +458,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		//Log.d(TAG, "LocationUpdated!");
 	}
 	
-	public void onSleuthButtonPressed(int range)
+	public void onSleuthButtonPressed(int range, String date)
 	{
 		// Basic code for postcode search
 		// No error handling, only basic code to illicit a result
@@ -523,7 +519,8 @@ OnConnectionFailedListener, LocationListener, Observer {
 		}
 
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
-		getCrimeData(origin, polyList);
+
+		new GetCrimesTask(origin, polyList, date);
 	}
 
 	@Override
@@ -537,7 +534,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		if (pData.isNotificationType(Notification.SLEUTH_BUTTON_PRESSED))
 		{
-			onSleuthButtonPressed((Integer)pData.get("range"));
+			onSleuthButtonPressed((Integer)pData.get("range"), (String)pData.get("date"));
 		}
 	}
 }
