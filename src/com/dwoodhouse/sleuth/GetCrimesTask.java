@@ -33,7 +33,8 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 		execute();
 	}
 
-	private String getPoly(List<LatLng> positions) {
+	private String getPoly(List<LatLng> positions) 
+	{
 		String polyArg = "";
 		for (LatLng latLng : positions) {
 			String polyPair = Double.toString(latLng.latitude);
@@ -47,8 +48,10 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 		return polyArg;
 	}
 
-	protected String doInBackground(String... urls) {
-		try {
+	protected String doInBackground(String... urls) 
+	{
+		try 
+		{
 			// TODO handle time outs!
 			BufferedReader in;
 			HttpClient httpclient = new DefaultHttpClient();
@@ -65,9 +68,10 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 			String line = in.readLine();
 
 			return line;
-		} catch (Exception e) {
-			String message = (e.getMessage() == null) ? "Message is empty" : e
-					.getMessage();
+		} 
+		catch (Exception e) 
+		{
+			String message = (e.getMessage() == null) ? "Message is empty" : e.getMessage();
 
 			Log.e(TAG, "Error in http connection " + message);
 

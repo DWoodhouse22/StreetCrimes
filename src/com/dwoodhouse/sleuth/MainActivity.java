@@ -286,7 +286,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 	private void addMapMarkers(String data)
 	{
-		
 		//Log.d(TAG, data);
 		for (Marker m : mMapMarkers)
 		{
@@ -401,6 +400,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		catch (Exception e)
 		{
 			// TODO nicer exception handling for the user
+			Toast.makeText(this, "There was a problem, try again with new Sleuth parameters", Toast.LENGTH_LONG).show();
 			e.printStackTrace();			
 		}
 	}

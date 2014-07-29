@@ -30,7 +30,6 @@
                 android:orientation="vertical" >
 
                 <!-- SEEK BAR -->
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -47,15 +46,8 @@
                         android:singleLine="true"
                         android:text="@string/range_bar_title"
                         android:textSize="20sp" />
-
-                    <SeekBar
-                        android:id="@+id/range_bar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:max="4" /> <!-- Default is 5km -->
-
-                    <TextView
+                    
+					<TextView
                         android:id="@+id/range_bar_subtitle"
                         style="?attr/spinnerDropDownItemStyle"
                         android:layout_width="wrap_content"
@@ -64,35 +56,19 @@
                         android:singleLine="true"
                         android:text="@string/range_bar_subtitle"
                         android:textSize="15sp" />
+					
+                    <SeekBar
+                        android:id="@+id/range_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:max="4" /> <!-- Max is 5km -->
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" >
-
-                    <!-- Spinner -->
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp" >
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="16sp"
-                            android:layout_marginRight="5dp"
-                            android:layout_marginLeft="5dp"
-                            android:text="Date:" />
-
-                        <Spinner
-                            android:id="@+id/date_spinner"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
 
                     <RadioGroup
                         android:layout_width="match_parent"
@@ -117,12 +93,35 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/postal_address_hint" />
+                    
+                    <!-- Spinner -->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp" >
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginLeft="5dp"
+                            android:text="Date:" />
+
+                        <Spinner
+                            android:id="@+id/date_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/category_list"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="0dp"
                         android:orientation="vertical" >
 
                         <TextView
