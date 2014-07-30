@@ -81,7 +81,7 @@ public class CombinedStreetCrimeData {
         TextView subtitle = (TextView) windowLayout.findViewById(R.id.info_subtitle);
         LinearLayout crimeList = (LinearLayout)windowLayout.findViewById(R.id.info_list);
         
-        title.setText("Crime " + mLocationName);
+        title.setText(mLocationName);
         subtitle.setText(Integer.toString(mCrimes.size()) + " crimes reported here in " + mMonth);
 
         for (String key : mCrimeCategoryCount.keySet())
@@ -89,7 +89,7 @@ public class CombinedStreetCrimeData {
         	TextView crimeInformation = (TextView) mActivity.getLayoutInflater().inflate(R.layout.info_window_information_item, null);
         	crimeList.addView(crimeInformation);
         	
-        	String tvString = NavigationDrawerHandler.mMapMarkerTitleMap.get(key);
+        	String tvString = NavigationDrawerHandler.getCategoryNameForId(key);
     		tvString += ": ";
     		tvString += Integer.toString(mCrimeCategoryCount.get(key));
     		crimeInformation.setText(tvString);

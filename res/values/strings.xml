@@ -11,4 +11,6 @@
 	<string name="search_by_postcode">Around this postcode</string>
 	<string name="search_my_location">Around my location</string>
 	<string name="show_these_categories">Show these categories</string>
+	<string name="spinner_text">Date:</string>
+	<string name="category_help">Filter options will appear once you start sleuthing</string>
 </resources>

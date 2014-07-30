@@ -1,34 +1,24 @@
 package com.dwoodhouse.sleuth;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URI;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import java.util.Observable;
+import java.util.Observer;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.dwoodhouse.streetcrimes.R;
 
-public class SplashScreenActivity extends Activity {
+public class SplashScreenActivity extends Activity implements Observer {
 
 	private final String TAG = "SplashScreenActivity";
 	private AnimationDrawable loadingAnim;
 	private ImageView loadingView;
+	private String dates;
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -44,59 +34,26 @@ public class SplashScreenActivity extends Activity {
 		}
 		loadingAnim.setOneShot(false);
 		loadingView.setBackgroundDrawable(loadingAnim);
+		
+		ObservingService.getInstance().addObserver(Notification.RETRIEVED_DATES, this);
 	}
 	
 	@Override
 	protected void onStart()
 	{
 		new GetDatesTask().execute();
-		
+		loadingAnim.start();
 		super.onStart();
 	}
-	
-	private class GetDatesTask extends AsyncTask<Void, Void, String>
-	{
 
-		@Override
-		protected String doInBackground(Void... params) {
-			try
-			{
-				HttpParams httpParams = new BasicHttpParams();
-			    HttpConnectionParams.setConnectionTimeout(httpParams, 5 * 1000); // 5 second time out
-				String requestURL = "http://data.police.uk/api/crimes-street-dates";
-				HttpClient httpclient = new DefaultHttpClient(httpParams);
-
-				// Set up the Http request
-				HttpGet request = new HttpGet();
-				URI website = new URI(requestURL);
-				request.setURI(website);
-
-				// Try and get a response
-				HttpResponse response = httpclient.execute(request);
-				// Read data received from the request
-				BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-				String line = in.readLine();
-
-				return line;
-			}
-			catch (Exception e)
-			{
-				String message = (e.getMessage() == null) ? "Message is empty" : e.getMessage();
-
-				Log.e(TAG, "Error " + message);
-
-				return "Error!";
-			}
-		}
+	@Override
+	public void update(Observable observable, Object data) {
+		Notification pData = (Notification)data;
 		
-		protected void onPreExecute()
+		// Retrieve the available dates first and use this to get the categories for each date
+		if (pData.isNotificationType(Notification.RETRIEVED_DATES))	
 		{
-			loadingAnim.start();
-		}
-		
-		protected void onPostExecute(final String response)
-		{
-			//Toast.makeText(mContext, "Launching...", Toast.LENGTH_SHORT).show();
+			dates = (String)pData.get("response");
 			new Handler().postDelayed(new Runnable() 
 			{
 	            @Override
@@ -104,13 +61,13 @@ public class SplashScreenActivity extends Activity {
 	            {
 	            	//overridePendingTransition(R.anim.push_right_in, R.anim.push_right_out);
 	            	Intent i = new Intent(SplashScreenActivity.this, MainActivity.class);
-	            	if (!response.equals("Error!"));
-	            		i.putExtra("dates", response);
+	            	i.putExtra("dates", dates);
 	            		
 	            	loadingAnim.stop();
 	            	startActivity(i);
 	            }
-	        }, 3000); 
+	        }, 1000);
 		}
+		
 	}
 }

@@ -31,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dwoodhouse.streetcrimes.R;
+import com.google.gson.Gson;
 
 public class NavigationDrawerHandler implements Observer {
 
@@ -50,6 +51,8 @@ public class NavigationDrawerHandler implements Observer {
 	private Context mContext;
 	private Activity mActivity;
 	
+	private static CrimeCategories[] mAvailableCategories;
+	
 	// Controls the update of the sleuth button text for some user feedback
 	private boolean mSleuthing = false;
 	private final int UPDATE_DELAY = 200;
@@ -64,11 +67,17 @@ public class NavigationDrawerHandler implements Observer {
 			mActivity.runOnUiThread(new Runnable()
 			{
 				@Override
-				public void run() {
+				public void run()
+				{
 					if (mSleuthing)
+					{
 						mSleuthButton.setText(mSleuthUpdateText[mSleuthUpdateCount]);
+					}
 					else
+					{
 						mSleuthButton.setText(R.string.button_sleuth);
+					}
+					
 					mSleuthButton.invalidate();
 				}
 			});
@@ -86,7 +95,6 @@ public class NavigationDrawerHandler implements Observer {
 		}	
 	};
 	
-	public static HashMap<String, String> mMapMarkerTitleMap;
 	public static HashMap<String, Boolean> mCategoriesToShow;
 	
 	private SharedPreferences mSharedPreferences;
@@ -100,31 +108,16 @@ public class NavigationDrawerHandler implements Observer {
 		nAvailableDates = availableDates;
 		mSharedPrefEditor = mSharedPreferences.edit();
 		mCategoriesToShow = new HashMap<String, Boolean>();
-		mMapMarkerTitleMap = new HashMap<String, String>();
-		
-		ObservingService.getInstance().addObserver(Notification.ADD_MAP_MARKERS, this);
+
+		ObservingService.getInstance().addObserver(Notification.MAP_MARKERS_ADDED, this);
+		ObservingService.getInstance().addObserver(Notification.RETRIEVED_CRIME_CATEGORIES, this);
 		
 		mSleuthButtonUpdateHandler = new Handler();
-		
-        mMapMarkerTitleMap.put("anti-social-behaviour", "Anti Social Behaviour");
-        mMapMarkerTitleMap.put("criminal-damage-arson", "Arson");
-        mMapMarkerTitleMap.put("bicycle-theft", "Bicycle Theft");
-        mMapMarkerTitleMap.put("burglary", "Burglary");
-        mMapMarkerTitleMap.put("drugs", "Drugs");
-        mMapMarkerTitleMap.put("other-theft", "Other Theft");
-        mMapMarkerTitleMap.put("public-order", "Public Order");
-        mMapMarkerTitleMap.put("robbery", "Robbery");
-        mMapMarkerTitleMap.put("shoplifting", "Shoplifting");
-        mMapMarkerTitleMap.put("theft-from-the-person", "Theft From The Person");
-        mMapMarkerTitleMap.put("vehicle-crime", "Vehicle Crime");
-        mMapMarkerTitleMap.put("violent-crime", "Violent Crime");
-        mMapMarkerTitleMap.put("possession-of-weapons", "Possession Of Weapons");
-        mMapMarkerTitleMap.put("other-crime", "Other");
         
 		initialiseRangeBar();
 		initialiseDateSpinner();
 		initialiseRadioButtons();
-		initialiseCategoryBoxes();
+		//initialiseCategoryBoxes();
 		initialiseSleuthButton();
 	}
 
@@ -159,7 +152,7 @@ public class NavigationDrawerHandler implements Observer {
 			dates.add(dm.getDate());
 		}
 		
-		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, dates);
+		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(mContext, R.layout.spinner_item, dates);
 		mDateSpinner.setAdapter(spinnerArrayAdapter);
 
 	}
@@ -198,15 +191,14 @@ public class NavigationDrawerHandler implements Observer {
 	private void initialiseCategoryBoxes()
 	{
 		LinearLayout catList = (LinearLayout) mDrawerLayout.findViewById(R.id.category_list);
-		
-		Collection<String> unsorted = mMapMarkerTitleMap.keySet();
-		List<String> sortedCatList = asSortedList(unsorted);
-		
-		for (String categoryId : sortedCatList)
+		catList.removeAllViews();
+		for (int i = 0; i < mAvailableCategories.length; i++)
 		{
+			String categoryName = mAvailableCategories[i].getName();
+			String categoryId = mAvailableCategories[i].getId();
 			//Log.i(TAG, categoryId);
 			CheckBox box = new CheckBox(mContext);
-			box.setText( mMapMarkerTitleMap.get(categoryId));
+			box.setText( categoryName);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			box.setLayoutParams(params);
 			box.setTag(categoryId);
@@ -299,7 +291,7 @@ public class NavigationDrawerHandler implements Observer {
 	public void update(Observable observable, Object data)
 	{
 		Notification pData = (Notification)data;
-		if (pData.isNotificationType(Notification.ADD_MAP_MARKERS))
+		if (pData.isNotificationType(Notification.MAP_MARKERS_ADDED))
 		{
 			mSleuthing = false;
 			mSleuthButton.setEnabled(true);
@@ -314,5 +306,24 @@ public class NavigationDrawerHandler implements Observer {
 				}
 			});
 		}
+		
+		if (pData.isNotificationType(Notification.RETRIEVED_CRIME_CATEGORIES))
+		{
+			String jsonData = (String)pData.get("response");
+			mAvailableCategories = new Gson().fromJson(jsonData, CrimeCategories[].class);
+			
+			initialiseCategoryBoxes();
+		}
+	}
+
+	public static String getCategoryNameForId(String key) {
+		for (int i = 0; i < mAvailableCategories.length; i++)
+		{
+			if (key.equals(mAvailableCategories[i].getId()))
+				return mAvailableCategories[i].getName();
+		}
+		
+		return null;
+		
 	}
 }

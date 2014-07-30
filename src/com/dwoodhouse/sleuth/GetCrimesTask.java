@@ -28,9 +28,6 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 		requestURL += getPoly(mPolyList);
 		requestURL += "&date=";
 		requestURL += date;
-
-		// Start the task
-		execute();
 	}
 
 	private String getPoly(List<LatLng> positions) 
@@ -84,7 +81,7 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 	{
 		Notification n = new Notification();
 		n.put("serverData", serverData);
-		ObservingService.getInstance().postNotification(Notification.ADD_MAP_MARKERS, n);
+		ObservingService.getInstance().postNotification(Notification.RETRIEVED_CRIMES, n);
 	}
 
 	protected void onPreExecute()

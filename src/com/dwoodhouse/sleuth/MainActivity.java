@@ -83,6 +83,9 @@ OnConnectionFailedListener, LocationListener, Observer {
     private Map<String, Float> mMarkerColourMap;
     private ArrayList<DateManager> nAvailableDates;
     
+    private boolean mRetrievedCrimes = false;
+	private boolean mRetrievedCategories = false;
+	private String mCrimeData;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -91,11 +94,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		Intent i = getIntent();
 		String dates = (String) i.getExtras().get("dates");
 		nAvailableDates = new ArrayList<DateManager>(Arrays.asList(new Gson().fromJson(dates, DateManager[].class)));
-		
-		for (DateManager s : nAvailableDates)
-		{
-			Log.d(TAG, s.getDate());
-		}
+
 		setContentView(R.layout.main_layout);
 		
 		getSupportActionBar().setTitle("Menu");
@@ -113,6 +112,8 @@ OnConnectionFailedListener, LocationListener, Observer {
         mUpdatesRequested = true;
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerList = (LinearLayout)findViewById(R.id.drawer_list);
+        
+        //TODO modify this so it allows for the variable category data
         mMarkerColourMap = new HashMap<String, Float>();
         mMarkerColourMap.put("anti-social-behaviour", BitmapDescriptorFactory.HUE_AZURE);
         mMarkerColourMap.put("bicycle-theft", BitmapDescriptorFactory.HUE_BLUE);
@@ -187,9 +188,13 @@ OnConnectionFailedListener, LocationListener, Observer {
 			}
         });
         
-        notifications.add(Notification.ADD_MAP_MARKERS);
+       // notifications.add(Notification.ADD_MAP_MARKERS);
         notifications.add(Notification.SLEUTH_BUTTON_PRESSED);
+        notifications.add(Notification.RETRIEVED_CRIMES);
+        notifications.add(Notification.RETRIEVED_CRIME_CATEGORIES);
 	}
+	
+	
 	
 	@Override
 	protected void onStart()
@@ -287,9 +292,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 	private void addMapMarkers(String data)
 	{
 		//Log.d(TAG, data);
+		mRetrievedCategories = false;
+		mRetrievedCrimes = false;
 		for (Marker m : mMapMarkers)
 		{
-			m.remove();
+			m.remove(); //remove from the map
 		}
 		mMapMarkers.clear();
 		try 
@@ -299,14 +306,16 @@ OnConnectionFailedListener, LocationListener, Observer {
 			List<StreetCrimeData> removedData = new ArrayList<StreetCrimeData>();
 			
 			// Remove unwanted crimes from the response
+			/*
 			for (int i = crimesDataList.size() - 1; i >= 0; i--)
 			{
+				Log.i(TAG, crimesDataList.get(i).getCategory());
 				if (!NavigationDrawerHandler.mCategoriesToShow.get(crimesDataList.get(i).getCategory()))
 				{
 					crimesDataList.remove(crimesDataList.get(i));
 				}
 			}
-			
+			*/
 			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList);
 			if (crimesDataListCopy.size() == 0)
 			{
@@ -358,11 +367,11 @@ OnConnectionFailedListener, LocationListener, Observer {
 			for (final CombinedStreetCrimeData nData : combinedStreetCrimeDataList)
 			{
 				LatLng loc = nData.getmLocation();
-
+				float colour = mMarkerColourMap.containsKey(nData.getmCategory()) ? mMarkerColourMap.get(nData.getmCategory()) : BitmapDescriptorFactory.HUE_VIOLET;
 				final Marker newMarker = mMap.addMarker(new MarkerOptions()
 					.position(loc)
 					.snippet(nData.getmLocationName())
-					.icon(BitmapDescriptorFactory.defaultMarker(nData.doesContainMixtureOfCategories() ? BitmapDescriptorFactory.HUE_VIOLET : mMarkerColourMap.get(nData.getmCategory()))));
+					.icon(BitmapDescriptorFactory.defaultMarker(nData.doesContainMixtureOfCategories() ? BitmapDescriptorFactory.HUE_VIOLET : colour )));
 
 					mMapMarkers.add(newMarker);
 				
@@ -396,6 +405,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 			}
 			
 			mDrawerLayout.closeDrawer(Gravity.LEFT);
+			ObservingService.getInstance().postNotification(Notification.MAP_MARKERS_ADDED); // tell the drawer to update sleuth button
 		}
 		catch (Exception e)
 		{
@@ -520,21 +530,43 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
 
-		new GetCrimesTask(origin, polyList, date);
+		new GetCrimesTask(origin, polyList, date).execute();
+		new GetCategoriesTask().execute(date);
 	}
 
 	@Override
 	public void update(Observable observable, Object data) 
 	{
 		Notification pData = (Notification)data;
-		if (pData.isNotificationType(Notification.ADD_MAP_MARKERS))
-		{
-			addMapMarkers((String)pData.get("serverData"));
-		}
-		
+	
 		if (pData.isNotificationType(Notification.SLEUTH_BUTTON_PRESSED))
 		{
 			onSleuthButtonPressed((Integer)pData.get("range"), (String)pData.get("date"));
+		}
+		
+		if (pData.isNotificationType(Notification.RETRIEVED_CRIMES))
+		{
+			Log.i(TAG, "retrieved crimes");
+			mRetrievedCrimes = true;
+			mCrimeData = (String)pData.get("serverData");
+			checkReadyToAddMarkers();
+		}
+		
+		if (pData.isNotificationType(Notification.RETRIEVED_CRIME_CATEGORIES))
+		{
+			Log.i(TAG, "retrieved categories");
+			mRetrievedCategories = true;
+			checkReadyToAddMarkers();
+		}
+	}
+	
+	
+	
+	private void checkReadyToAddMarkers()
+	{
+		if (mRetrievedCrimes && mRetrievedCategories)
+		{
+			addMapMarkers(mCrimeData);
 		}
 	}
 }
