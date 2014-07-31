@@ -179,7 +179,7 @@ public class NavigationDrawerHandler implements Observer {
 	public static String getPostcode()
 	{
 		EditText editText = (EditText)mDrawerLayout.findViewById(R.id.postcode);
-		return editText.getText().toString().trim();
+		return editText.getText().toString().replaceAll("\\s+", ""); // remove all whitespace
 	}
 	
 	
