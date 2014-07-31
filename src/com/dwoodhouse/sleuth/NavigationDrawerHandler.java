@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,7 +57,7 @@ public class NavigationDrawerHandler implements Observer {
 	// Controls the update of the sleuth button text for some user feedback
 	private boolean mSleuthing = false;
 	private final int UPDATE_DELAY = 200;
-	private final String[] mSleuthUpdateText = new String[] {"Sleuthing", "Sleuthing.", "Sleuthing..", "Sleuthing..."};
+	private final String[] mSleuthUpdateText = new String[] {"Sleuthing...", "Sleuthing", "Sleuthing.", "Sleuthing.."};
 	private int mSleuthUpdateCount = 0;
 	private Handler mSleuthButtonUpdateHandler;
 	private Runnable mSleuthButtonUpdateRunnable = new Runnable()
@@ -64,24 +65,6 @@ public class NavigationDrawerHandler implements Observer {
 		@Override
 		public void run() 
 		{
-			mActivity.runOnUiThread(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					if (mSleuthing)
-					{
-						mSleuthButton.setText(mSleuthUpdateText[mSleuthUpdateCount]);
-					}
-					else
-					{
-						mSleuthButton.setText(R.string.button_sleuth);
-					}
-					
-					mSleuthButton.invalidate();
-				}
-			});
-			
 			mSleuthUpdateCount++;
 			if (mSleuthUpdateCount > 3)
 			{
@@ -90,10 +73,30 @@ public class NavigationDrawerHandler implements Observer {
 			
 			if (mSleuthing)
 			{
+				mSleuthButton.setText(mSleuthUpdateText[mSleuthUpdateCount]);
 				mSleuthButtonUpdateHandler.postDelayed(mSleuthButtonUpdateRunnable, UPDATE_DELAY);
 			}
-		}	
+			else
+			{
+				mSleuthButton.setText(R.string.button_sleuth);
+				mSleuthButtonUpdateHandler.removeCallbacks(this);
+			}
+			
+			udpateView(mSleuthButton);	
+		}
 	};
+	
+	private void udpateView(final View v) 
+	{
+		mActivity.runOnUiThread(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				v.invalidate();
+			}
+		});
+	}	
 	
 	public static HashMap<String, Boolean> mCategoriesToShow;
 	
@@ -190,25 +193,73 @@ public class NavigationDrawerHandler implements Observer {
 	
 	private void initialiseCategoryBoxes()
 	{
-		LinearLayout catList = (LinearLayout) mDrawerLayout.findViewById(R.id.category_list);
+		final LinearLayout catList = (LinearLayout) mDrawerLayout.findViewById(R.id.category_list);
 		catList.removeAllViews();
+		mCategoriesToShow.clear();
 		for (int i = 0; i < mAvailableCategories.length; i++)
 		{
 			String categoryName = mAvailableCategories[i].getName();
 			String categoryId = mAvailableCategories[i].getId();
-			//Log.i(TAG, categoryId);
+			
+			mCategoriesToShow.put(categoryId, true);
+			Log.i(TAG, categoryId);
 			CheckBox box = new CheckBox(mContext);
 			box.setText( categoryName);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			box.setLayoutParams(params);
 			box.setTag(categoryId);
 			box.setChecked(true);
-			box.setOnCheckedChangeListener(new OnCheckedChangeListener()
+			box.setOnClickListener(new OnClickListener()
 			{
 				@Override
-				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) 
+				public void onClick(View v)
 				{
-					mCategoriesToShow.put((String)buttonView.getTag(), isChecked);
+					CheckBox clickedBox = (CheckBox) v;
+					boolean isChecked = clickedBox.isChecked();
+					
+					if (clickedBox.getTag().equals("all-crime"))
+					{
+						for (String key : mCategoriesToShow.keySet())
+						{
+							CheckBox b = (CheckBox)catList.findViewWithTag(key);
+							b.setChecked(isChecked);
+							mCategoriesToShow.put(key, isChecked);
+						}
+					}
+					else
+					{
+						mCategoriesToShow.put((String)v.getTag(), isChecked);
+						
+						// Uncheck the all crimes box
+						if (!isChecked)
+						{
+							CheckBox b = (CheckBox)catList.findViewWithTag("all-crime");
+							b.setChecked(false);
+							mCategoriesToShow.put("all-crime", false);
+						}
+						else
+						{
+							// We've made something true, check all other boxes and update all crimes as appropriate
+							boolean allCheckedTrue = true;
+							for (String key : mCategoriesToShow.keySet())
+							{
+								if (key.equals("all-crime"))
+									continue;
+								
+								if (!mCategoriesToShow.get(key))
+								{
+									allCheckedTrue = false;
+									break;
+								}
+							}
+							
+							if (allCheckedTrue)
+							{
+								CheckBox b = (CheckBox)catList.findViewWithTag("all-crime");
+								b.setChecked(true);
+							}
+						}
+					}
 				}
 			});
 			catList.addView(box);
@@ -224,14 +275,14 @@ public class NavigationDrawerHandler implements Observer {
 			@Override
 			public void onClick(View view) 
 			{
+				mSleuthing = true;
+				mSleuthButtonUpdateHandler.post(mSleuthButtonUpdateRunnable);
 				mSleuthButton.setEnabled(false);
 				Notification n = new Notification();
 				n.put("range", mRangeBarProgress);
 				n.put("date", mDateSpinner.getSelectedItem());
-				ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
 				
-				mSleuthing = true;
-				mSleuthButtonUpdateHandler.post(mSleuthButtonUpdateRunnable);
+				ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
 			}	
 		});
 	}
@@ -296,15 +347,8 @@ public class NavigationDrawerHandler implements Observer {
 			mSleuthing = false;
 			mSleuthButton.setEnabled(true);
 			mSleuthUpdateCount = 0;
-			mActivity.runOnUiThread(new Runnable()
-			{
-				@Override
-				public void run() 
-				{
-					mSleuthButton.setText(R.string.button_sleuth);
-					mSleuthButton.invalidate();
-				}
-			});
+			
+			//mSleuthButtonUpdateHandler.post(mSleuthButtonUpdateRunnable);
 		}
 		
 		if (pData.isNotificationType(Notification.RETRIEVED_CRIME_CATEGORIES))
@@ -316,7 +360,8 @@ public class NavigationDrawerHandler implements Observer {
 		}
 	}
 
-	public static String getCategoryNameForId(String key) {
+	public static String getCategoryNameForId(String key) 
+	{
 		for (int i = 0; i < mAvailableCategories.length; i++)
 		{
 			if (key.equals(mAvailableCategories[i].getId()))
@@ -324,6 +369,5 @@ public class NavigationDrawerHandler implements Observer {
 		}
 		
 		return null;
-		
 	}
 }

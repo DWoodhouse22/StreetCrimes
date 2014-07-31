@@ -12,15 +12,22 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class GetCategoriesTask extends AsyncTask<String, Void, String> 
+public class GetCategoriesTask extends AsyncTask<Void, Void, String> 
 {
 	private final String TAG = "GetCategoriesTask";
+	private String mDate;
+	public GetCategoriesTask(String date)
+	{
+		mDate = date;
+		Log.i(TAG, mDate);
+	}
 	@Override
-	protected String doInBackground(String... date) {
+	protected String doInBackground(Void... v) {
 		try
 		{
 			String requestURL = "http://data.police.uk/api/crime-categories?date=";
-			requestURL += date;
+			requestURL += mDate;
+			Log.i (TAG, requestURL);
 			HttpClient httpClient = new DefaultHttpClient();
 			
 			HttpGet request = new HttpGet();
@@ -53,6 +60,7 @@ public class GetCategoriesTask extends AsyncTask<String, Void, String>
 	{
 		Notification n = new Notification();
 		n.put("response", response);
+		Log.d(TAG, response);
 		ObservingService.getInstance().postNotification(Notification.RETRIEVED_CRIME_CATEGORIES, n);
 	}
 

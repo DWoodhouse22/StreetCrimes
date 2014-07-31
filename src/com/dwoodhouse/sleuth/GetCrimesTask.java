@@ -21,9 +21,11 @@ public class GetCrimesTask extends AsyncTask<String, Void, String> {
 	private List<LatLng> mPolyList;
 	String requestURL;
 
-	public GetCrimesTask(LatLng origin, List<LatLng> polyList, String date) {
+	public GetCrimesTask(LatLng origin, List<LatLng> polyList, String date) 
+	{
 		mPolyList = polyList;
 
+		Log.d(TAG, date);
 		requestURL = "http://data.police.uk/api/crimes-street/all-crime?poly=";
 		requestURL += getPoly(mPolyList);
 		requestURL += "&date=";

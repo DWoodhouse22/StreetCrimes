@@ -86,6 +86,9 @@ OnConnectionFailedListener, LocationListener, Observer {
     private boolean mRetrievedCrimes = false;
 	private boolean mRetrievedCategories = false;
 	private String mCrimeData;
+	
+	private SearchParams mPreviousSearchedData;
+	private SearchParams mCurrentSearchedData;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -135,11 +138,11 @@ OnConnectionFailedListener, LocationListener, Observer {
  				mDrawerLayout,
  				R.drawable.ic_navigation_drawer,
  				R.string.drawer_open,
- 				R.string.drawer_close) {
+ 				R.string.drawer_close) 
+        {
 
-
-			public void onDrawerClosed(View view) {
-				
+			public void onDrawerClosed(View view) 
+			{
 				// If the keyboard was open during postcode entry, force it to hide.
 				InputMethodManager inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -291,37 +294,48 @@ OnConnectionFailedListener, LocationListener, Observer {
 
 	private void addMapMarkers(String data)
 	{
-		//Log.d(TAG, data);
 		mRetrievedCategories = false;
 		mRetrievedCrimes = false;
+		
+		// remove from the map
 		for (Marker m : mMapMarkers)
-		{
-			m.remove(); //remove from the map
-		}
+			m.remove();
+
+		// Clear the list
 		mMapMarkers.clear();
+
 		try 
 		{
-			List<StreetCrimeData> crimesDataList = new LinkedList<StreetCrimeData>(Arrays.asList(new Gson().fromJson(data, StreetCrimeData[].class))); // convert the array into a list, more flexible.
+			LinkedList<StreetCrimeData> crimesDataList = new LinkedList<StreetCrimeData>(Arrays.asList(new Gson().fromJson(data, StreetCrimeData[].class))); // convert the array into a list, more flexible.
 			final List<CombinedStreetCrimeData> combinedStreetCrimeDataList = new ArrayList<CombinedStreetCrimeData>(); // This list contains all data at the same location in one object
 			List<StreetCrimeData> removedData = new ArrayList<StreetCrimeData>();
 			
 			// Remove unwanted crimes from the response
-			/*
-			for (int i = crimesDataList.size() - 1; i >= 0; i--)
+			for (int i = crimesDataList.size() - 1; i >= 0; i--) 
 			{
-				Log.i(TAG, crimesDataList.get(i).getCategory());
-				if (!NavigationDrawerHandler.mCategoriesToShow.get(crimesDataList.get(i).getCategory()))
+				try
 				{
-					crimesDataList.remove(crimesDataList.get(i));
+					if (!NavigationDrawerHandler.mCategoriesToShow.get(crimesDataList.get(i).getCategory())) 
+					{
+						//Log.i(TAG, "Removed: " + crimesDataList.get(i).getCategory());
+						crimesDataList.remove(crimesDataList.get(i));
+					}
+				}
+				catch (NullPointerException e)
+				{
+					Log.e(TAG, "NULL POINTER");
+					continue;
 				}
 			}
-			*/
+			
 			List<StreetCrimeData> crimesDataListCopy = new ArrayList<StreetCrimeData>(crimesDataList);
 			if (crimesDataListCopy.size() == 0)
 			{
 				Toast.makeText(this, "No crimes reported in that area with the supplied filters.", Toast.LENGTH_LONG).show();
+				ObservingService.getInstance().postNotification(Notification.MAP_MARKERS_ADDED);
 				return;
 			}
+			
 			/*
 			 * TODO - This nested loop arrangement is really horrible...
 			 */
@@ -377,17 +391,19 @@ OnConnectionFailedListener, LocationListener, Observer {
 				
 
 				// Setting a custom info window adapter for the google map
-		        mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
-		 
+		        mMap.setInfoWindowAdapter(new InfoWindowAdapter()
+		        {
 		            // Use default InfoWindow frame
 		            @Override
-		            public View getInfoWindow(Marker marker) {
+		            public View getInfoWindow(Marker marker) 
+		            {
 		                return null;
 		            }
 		 
 		            // Defines the contents of the InfoWindow
 		            @Override
-		            public View getInfoContents(Marker marker) {
+		            public View getInfoContents(Marker marker) 
+		            {
 		            	CombinedStreetCrimeData nMarker = null;
 		            	for (CombinedStreetCrimeData n : combinedStreetCrimeDataList)
 		            	{
@@ -397,9 +413,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		            			break;
 		            		}
 		            	}
-		                
 		            	return nMarker.getView();
-		            
 		            }
 		        });
 			}
@@ -411,6 +425,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		{
 			// TODO nicer exception handling for the user
 			Toast.makeText(this, "There was a problem, try again with new Sleuth parameters", Toast.LENGTH_LONG).show();
+			ObservingService.getInstance().postNotification(Notification.MAP_MARKERS_ADDED);
 			e.printStackTrace();			
 		}
 	}
@@ -470,68 +485,116 @@ OnConnectionFailedListener, LocationListener, Observer {
 	
 	public void onSleuthButtonPressed(int range, String date)
 	{
-		// Basic code for postcode search
-		// No error handling, only basic code to illicit a result
-		Geocoder geoCoder = new Geocoder(this, Locale.getDefault());
-	    List<Address> address = null;
-	    double lat = 0;
-	    double lon = 0;
-	    boolean postcodeValid = false;
-	    LatLng origin = new LatLng(0,0);
-
-	    if (mSharedPreferences.getBoolean(NavigationDrawerHandler.KEY_SEARCH_MY_LOCATION, true))
-	    {
-	    	postcodeValid = true;
-	    	origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
-	    }
-	    else
-	    {
-	    	if (!NavigationDrawerHandler.getPostcode().equals(""))
-	    	{
-		    	try 
-		    	{
-		    		address = geoCoder.getFromLocationName(NavigationDrawerHandler.getPostcode(), 10);
-		        } 
-		    	catch (IOException e) 
-		        {
-		            e.printStackTrace();
-		        }
-		    	
-		        if (address.size() > 0) 
-		        {
-		        	postcodeValid = true;
-		            Address add = address.get(0);
-		            lat = add.getLatitude();
-		            lon = add.getLongitude();
-		        }  
-		        
-		        origin = new LatLng(lat, lon);
-		    }
-	    }
-	    
-	    
-	    if (!postcodeValid)
-	    {
-	    	Toast.makeText(this, "Please enter a valid postcode", Toast.LENGTH_SHORT).show();
-	    	return;
-	    }
-	    //Log.i(TAG, origin.toString());
-	    
-	   
-		float pRange = (float)range / 2.0f;
-		List<LatLng> polyList = new ArrayList<LatLng>();
-		
-		int precision = 8; // number of degree steps to take for the poly line
-		for (int i = 0; i < precision; i++)
+		if (mCurrentSearchedData != null)
 		{
-			int degrees = (360 / precision) * i;
-			polyList.add(LatLngHelper.findDestinationWithDistance(pRange, degrees, origin));
+			mPreviousSearchedData = mCurrentSearchedData;
 		}
+		else
+		{
+			mPreviousSearchedData = new SearchParams("", 0, false, "");
+		}
+		
+		mCurrentSearchedData = new SearchParams(
+				date,
+				range,
+				mSharedPreferences.getBoolean(NavigationDrawerHandler.KEY_SEARCH_MY_LOCATION, true),
+				NavigationDrawerHandler.getPostcode());
+		
+		// If we're using the same search data as before, just filter the results
+		if (mCurrentSearchedData.equalTo(mPreviousSearchedData) && mPreviousSearchedData != null)
+		{
+			Log.i(TAG, "Previous search is identical");
+			addMapMarkers(mCrimeData);
+		}
+		else
+		{
+			// Basic code for postcode search
+			// No error handling, only basic code to illicit a result
+			Geocoder geoCoder = new Geocoder(this, Locale.getDefault());
+		    List<Address> address = null;
+		    double lat = 0;
+		    double lon = 0;
+		    boolean postcodeValid = false;
+		    LatLng origin = new LatLng(0,0);
+	
+		    if (mCurrentSearchedData.mMyLocation)
+		    {
+		    	postcodeValid = true;
+		    	origin = new LatLng(mLocationClient.getLastLocation().getLatitude(), mLocationClient.getLastLocation().getLongitude());
+		    }
+		    else
+		    {
+		    	if (!NavigationDrawerHandler.getPostcode().equals(""))
+		    	{
+			    	try 
+			    	{
+			    		address = geoCoder.getFromLocationName(mCurrentSearchedData.mPostcode, 10);
+			        } 
+			    	catch (IOException e) 
+			        {
+			            e.printStackTrace();
+			        }
+			    	
+			        if (address.size() > 0) 
+			        {
+			        	postcodeValid = true;
+			            Address add = address.get(0);
+			            lat = add.getLatitude();
+			            lon = add.getLongitude();
+			        }  
+			        
+			        origin = new LatLng(lat, lon);
+			    }
+		    }
+		    
+		    
+		    if (!postcodeValid)
+		    {
+		    	Toast.makeText(this, "Please enter a valid postcode", Toast.LENGTH_SHORT).show();
+		    	return;
+		    }
+		   
+			float pRange = (float)range / 2.0f;
+			List<LatLng> polyList = new ArrayList<LatLng>();
+			
+			int precision = 8; // number of degree steps to take for the poly line
+			for (int i = 0; i < precision; i++)
+			{
+				int degrees = (360 / precision) * i;
+				polyList.add(LatLngHelper.findDestinationWithDistance(pRange, degrees, origin));
+			}
+	
+			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
 
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
-
-		new GetCrimesTask(origin, polyList, date).execute();
-		new GetCategoriesTask().execute(date);
+			new GetCrimesTask(origin, polyList, date).execute();
+			new GetCategoriesTask(date).execute();
+		}
+	}
+	
+	private class SearchParams
+	{
+		public String mDate;
+		public int mRange;
+		public boolean mMyLocation;
+		public String mPostcode;
+		
+		public SearchParams(String date, int range, boolean myLocation, String postcode) 
+		{
+			mDate = date;
+			mRange = range;
+			mMyLocation = myLocation;
+			mPostcode = postcode;
+		}
+		
+		public boolean equalTo(SearchParams params)
+		{
+			if (!mDate.equals(params.mDate)) return false;
+			if (mRange != params.mRange) return false;
+			if (mMyLocation != params.mMyLocation) return false;
+			if (!mPostcode.equals(params.mPostcode)) return false;
+			
+			return true;
+		}
 	}
 
 	@Override
@@ -546,7 +609,6 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		if (pData.isNotificationType(Notification.RETRIEVED_CRIMES))
 		{
-			Log.i(TAG, "retrieved crimes");
 			mRetrievedCrimes = true;
 			mCrimeData = (String)pData.get("serverData");
 			checkReadyToAddMarkers();
@@ -554,13 +616,10 @@ OnConnectionFailedListener, LocationListener, Observer {
 		
 		if (pData.isNotificationType(Notification.RETRIEVED_CRIME_CATEGORIES))
 		{
-			Log.i(TAG, "retrieved categories");
 			mRetrievedCategories = true;
 			checkReadyToAddMarkers();
 		}
 	}
-	
-	
 	
 	private void checkReadyToAddMarkers()
 	{
