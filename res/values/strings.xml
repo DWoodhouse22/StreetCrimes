@@ -4,7 +4,7 @@
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
     <string name="menu_content_description">Menu Icon</string>
-    <string name="range_bar_subtitle">1km</string>
+    <string name="range_bar_subtitle">1 mile</string>
 	<string name="range_bar_title">Search Area</string>
 	<string name="button_sleuth">Tap to Sleuth!</string>
 	<string name="postal_address_hint">Postcode</string>
@@ -12,5 +12,5 @@
 	<string name="search_my_location">Around my location</string>
 	<string name="show_these_categories">Show these categories</string>
 	<string name="spinner_text">Date:</string>
-	<string name="category_help">Filter options will appear once you start sleuthing</string>
+	<string name="category_help">Filter options will appear after your first Sleuth</string>
 </resources>

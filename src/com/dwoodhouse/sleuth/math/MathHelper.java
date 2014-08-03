@@ -2,7 +2,7 @@ package com.dwoodhouse.sleuth.math;
 
 import com.google.android.gms.maps.model.LatLng;
 
-public class LatLngHelper {
+public class MathHelper {
 	//private static final String TAG = "LatLngHelper";
 	private static final int EARTH_RADIUS = 6371; // in km
 
@@ -27,11 +27,11 @@ public class LatLngHelper {
 	
 	public static double ToKM(double miles)
 	{
-		return 0;
+		return miles * 0.6;
 	}
 	
 	public static double ToMiles(double km)
 	{
-		return 0;
+		return km * 1.6;
 	}
 }

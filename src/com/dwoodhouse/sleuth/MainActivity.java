@@ -32,7 +32,7 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.dwoodhouse.sleuth.math.LatLngHelper;
+import com.dwoodhouse.sleuth.math.MathHelper;
 import com.dwoodhouse.streetcrimes.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -554,14 +554,15 @@ OnConnectionFailedListener, LocationListener, Observer {
 		    	return;
 		    }
 		   
-			float pRange = (float)range / 2.0f;
+			double rangeInKM = range / 2.0D;
+			double rangeInMiles = MathHelper.ToMiles(rangeInKM);
 			List<LatLng> polyList = new ArrayList<LatLng>();
 			
 			int precision = 8; // number of degree steps to take for the poly line
 			for (int i = 0; i < precision; i++)
 			{
 				int degrees = (360 / precision) * i;
-				polyList.add(LatLngHelper.findDestinationWithDistance(pRange, degrees, origin));
+				polyList.add(MathHelper.findDestinationWithDistance(rangeInMiles, degrees, origin));
 			}
 	
 			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
@@ -601,10 +602,17 @@ OnConnectionFailedListener, LocationListener, Observer {
 	public void update(Observable observable, Object data) 
 	{
 		Notification pData = (Notification)data;
-	
-		if (pData.isNotificationType(Notification.SLEUTH_BUTTON_PRESSED))
+		
+		try
 		{
-			onSleuthButtonPressed((Integer)pData.get("range"), (String)pData.get("date"));
+			if (pData.isNotificationType(Notification.SLEUTH_BUTTON_PRESSED))
+			{
+				onSleuthButtonPressed((Integer)pData.get("range"), (String)pData.get("date"));
+			}	
+		}
+		catch (NullPointerException e)
+		{
+			Toast.makeText(this, "Something went wrong. Try again.", Toast.LENGTH_LONG).show();
 		}
 		
 		if (pData.isNotificationType(Notification.RETRIEVED_CRIMES))

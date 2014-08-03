@@ -320,7 +320,7 @@ public class NavigationDrawerHandler implements Observer {
 				mRangeBarProgress = seekBar.getProgress() + 1;
 				String s;
 				s = Integer.toString(mRangeBarProgress);
-				s += "km";
+				s += mRangeBarProgress == 1 ? " mile" : " miles";
 				
 				TextView tS = (TextView) mDrawerLayout.findViewById(R.id.range_bar_subtitle);
 				tS.setText(s);
