@@ -568,7 +568,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(origin, 13)); //TODO make this animate
 
 			new GetCrimesTask(origin, polyList, date).execute();
-			new GetCategoriesTask(date).execute();
+			new GetCategoriesTask(date, this).execute();
 		}
 	}
 	
@@ -609,17 +609,18 @@ OnConnectionFailedListener, LocationListener, Observer {
 			{
 				onSleuthButtonPressed((Integer)pData.get("range"), (String)pData.get("date"));
 			}	
+		
+			if (pData.isNotificationType(Notification.RETRIEVED_CRIMES))
+			{
+				mRetrievedCrimes = true;
+				mCrimeData = (String)pData.get("serverData");
+				checkReadyToAddMarkers();
+			}
 		}
-		catch (NullPointerException e)
+		catch (Exception e)
 		{
 			Toast.makeText(this, "Something went wrong. Try again.", Toast.LENGTH_LONG).show();
-		}
-		
-		if (pData.isNotificationType(Notification.RETRIEVED_CRIMES))
-		{
-			mRetrievedCrimes = true;
-			mCrimeData = (String)pData.get("serverData");
-			checkReadyToAddMarkers();
+			ObservingService.getInstance().postNotification(Notification.SLEUTH_ERROR);
 		}
 		
 		if (pData.isNotificationType(Notification.RETRIEVED_CRIME_CATEGORIES))

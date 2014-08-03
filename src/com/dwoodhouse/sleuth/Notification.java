@@ -11,6 +11,7 @@ public class Notification extends HashMap<String, Object>
 	public static final String RETRIEVED_CRIME_CATEGORIES = "retrievedCrimeCategories";
 	public static final String RETRIEVED_CRIMES = "retrievedCrimes";
 	public static final String MAP_MARKERS_ADDED = "mapMarkersAdded";
+	public static final String SLEUTH_ERROR = "sleuthError";
 	
 	public static boolean isNotificationType(Object data, String notificationID)
 	{

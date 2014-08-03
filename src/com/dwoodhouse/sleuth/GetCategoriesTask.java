@@ -9,16 +9,20 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 public class GetCategoriesTask extends AsyncTask<Void, Void, String> 
 {
 	private final String TAG = "GetCategoriesTask";
 	private String mDate;
-	public GetCategoriesTask(String date)
+	private Context mContext;
+	public GetCategoriesTask(String date, Context context)
 	{
 		mDate = date;
+		mContext = context;
 		Log.i(TAG, mDate);
 	}
 	@Override
@@ -60,8 +64,16 @@ public class GetCategoriesTask extends AsyncTask<Void, Void, String>
 	{
 		Notification n = new Notification();
 		n.put("response", response);
-		Log.d(TAG, response);
-		ObservingService.getInstance().postNotification(Notification.RETRIEVED_CRIME_CATEGORIES, n);
+		
+		if (response == null)
+		{
+			Toast.makeText(mContext, "Something went wrong, try again", Toast.LENGTH_LONG).show();
+			ObservingService.getInstance().postNotification(Notification.SLEUTH_ERROR);
+		}
+		else
+		{
+			ObservingService.getInstance().postNotification(Notification.RETRIEVED_CRIME_CATEGORIES, n);
+		}
 	}
 
 }

@@ -9,7 +9,9 @@ import java.util.Observer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.util.Log;
@@ -19,10 +21,9 @@ import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -86,6 +87,8 @@ public class NavigationDrawerHandler implements Observer {
 		}
 	};
 	
+	private ArrayList<String> mNotifications;
+	
 	private void udpateView(final View v) 
 	{
 		mActivity.runOnUiThread(new Runnable()
@@ -112,8 +115,13 @@ public class NavigationDrawerHandler implements Observer {
 		mSharedPrefEditor = mSharedPreferences.edit();
 		mCategoriesToShow = new HashMap<String, Boolean>();
 
-		ObservingService.getInstance().addObserver(Notification.MAP_MARKERS_ADDED, this);
-		ObservingService.getInstance().addObserver(Notification.RETRIEVED_CRIME_CATEGORIES, this);
+		mNotifications = new ArrayList<String>();
+		mNotifications.add(Notification.MAP_MARKERS_ADDED);
+		mNotifications.add(Notification.RETRIEVED_CRIME_CATEGORIES);
+		mNotifications.add(Notification.SLEUTH_ERROR);
+		
+		for (String s : mNotifications)
+			ObservingService.getInstance().addObserver(s, this);
 		
 		mSleuthButtonUpdateHandler = new Handler();
         
@@ -202,7 +210,7 @@ public class NavigationDrawerHandler implements Observer {
 			String categoryId = mAvailableCategories[i].getId();
 			
 			mCategoriesToShow.put(categoryId, true);
-			Log.i(TAG, categoryId);
+			//Log.i(TAG, categoryId);
 			CheckBox box = new CheckBox(mContext);
 			box.setText( categoryName);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -268,6 +276,21 @@ public class NavigationDrawerHandler implements Observer {
 		}
 	}
 
+	private AlertDialog buildCheckConnectionDialog()
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+		builder.setTitle("Check your connection");
+		builder.setMessage("An internet connection is required to Sleuth, check your connection and try again.");
+		
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) 
+			{
+				dialog.dismiss();
+			}
+		});
+		return builder.create();
+	}
 	private void initialiseSleuthButton() {
 		mSleuthButton = (Button)mDrawerLayout.findViewById(R.id.button_sleuth);
 		mSleuthButton.setOnClickListener(new OnClickListener() {
@@ -275,14 +298,21 @@ public class NavigationDrawerHandler implements Observer {
 			@Override
 			public void onClick(View view) 
 			{
-				mSleuthing = true;
-				mSleuthButtonUpdateHandler.post(mSleuthButtonUpdateRunnable);
-				mSleuthButton.setEnabled(false);
-				Notification n = new Notification();
-				n.put("range", mRangeBarProgress);
-				n.put("date", mDateSpinner.getSelectedItem());
-				
-				ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
+				if (Application.checkConnection(mActivity))	
+				{
+					mSleuthing = true;
+					mSleuthButtonUpdateHandler.post(mSleuthButtonUpdateRunnable);
+					mSleuthButton.setEnabled(false);
+					Notification n = new Notification();
+					n.put("range", mRangeBarProgress);
+					n.put("date", mDateSpinner.getSelectedItem());
+					
+					ObservingService.getInstance().postNotification(Notification.SLEUTH_BUTTON_PRESSED, n);
+				}
+				else
+				{
+					buildCheckConnectionDialog().show();
+				}
 			}	
 		});
 	}
@@ -353,10 +383,25 @@ public class NavigationDrawerHandler implements Observer {
 		
 		if (pData.isNotificationType(Notification.RETRIEVED_CRIME_CATEGORIES))
 		{
-			String jsonData = (String)pData.get("response");
-			mAvailableCategories = new Gson().fromJson(jsonData, CrimeCategories[].class);
-			
-			initialiseCategoryBoxes();
+			try
+			{
+				String jsonData = (String) pData.get("response");
+				mAvailableCategories = new Gson().fromJson(jsonData, CrimeCategories[].class);
+
+				initialiseCategoryBoxes();
+			}
+			catch (Exception e)
+			{
+				Toast.makeText(mContext, "Something went wrong, try again", Toast.LENGTH_LONG).show();
+				ObservingService.getInstance().postNotification(Notification.SLEUTH_ERROR);
+			}
+		}
+		
+		if (pData.isNotificationType(Notification.SLEUTH_ERROR))
+		{
+			mSleuthing = false;
+			mSleuthButton.setEnabled(true);
+			mSleuthUpdateCount = 0;
 		}
 	}
 

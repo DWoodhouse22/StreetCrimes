@@ -4,6 +4,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
@@ -19,10 +21,12 @@ public class SplashScreenActivity extends Activity implements Observer {
 	private AnimationDrawable loadingAnim;
 	private ImageView loadingView;
 	private String dates;
+	private Activity mActivity;
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);	
+		mActivity = this;
 		setContentView(R.layout.splash_layout);
 		
 		loadingAnim = new AnimationDrawable();
@@ -45,6 +49,23 @@ public class SplashScreenActivity extends Activity implements Observer {
 		loadingAnim.start();
 		super.onStart();
 	}
+	
+	private AlertDialog buildCheckConnectionDialog()
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Check your internet connection");
+		builder.setMessage("An internet connection is required to run Sleuth, check your connection and try again.  WiFi recommended");
+		
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() 
+		{
+			public void onClick(DialogInterface dialog, int id) 
+		    {
+				finish();
+		    }			     
+		});
+		
+		return builder.create();
+	}
 
 	@Override
 	public void update(Observable observable, Object data) {
@@ -60,14 +81,20 @@ public class SplashScreenActivity extends Activity implements Observer {
 	            public void run() 
 	            {
 	            	//overridePendingTransition(R.anim.push_right_in, R.anim.push_right_out);
-	            	Intent i = new Intent(SplashScreenActivity.this, MainActivity.class);
-	            	i.putExtra("dates", dates);
-	            		
-	            	loadingAnim.stop();
-	            	startActivity(i);
+	            	if (Application.checkConnection(mActivity))
+	            	{
+	            		Intent i = new Intent(SplashScreenActivity.this, MainActivity.class);
+		            	i.putExtra("dates", dates);
+		            		
+		            	loadingAnim.stop();
+		            	startActivity(i);
+	            	}
+	            	else
+	            	{
+	            		buildCheckConnectionDialog().show();
+	            	}
 	            }
 	        }, 1000);
 		}
-		
 	}
 }
