@@ -551,6 +551,7 @@ OnConnectionFailedListener, LocationListener, Observer {
 		    if (!postcodeValid)
 		    {
 		    	Toast.makeText(this, "Please enter a valid postcode", Toast.LENGTH_SHORT).show();
+		    	ObservingService.getInstance().postNotification(Notification.SLEUTH_ERROR);
 		    	return;
 		    }
 		   
