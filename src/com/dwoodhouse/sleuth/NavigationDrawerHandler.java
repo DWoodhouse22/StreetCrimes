@@ -137,18 +137,22 @@ public class NavigationDrawerHandler implements Observer {
 		mRbMyLocation = (RadioButton)mDrawerLayout.findViewById(R.id.radio_my_location);
 		mRbPostcode = (RadioButton)mDrawerLayout.findViewById(R.id.radio_by_postcode);
 		
-		mRbMyLocation.setOnClickListener(new OnClickListener() {
+		mRbMyLocation.setOnClickListener(new OnClickListener()
+		{
 			@Override
-			public void onClick(View v) {
+			public void onClick(View v) 
+			{
 				onRadioButtonClicked(v);
 			}
 		});
 		mRbMyLocation.setChecked(true);
 		mSharedPrefEditor.putBoolean(KEY_SEARCH_MY_LOCATION, true).commit();
 		
-		mRbPostcode.setOnClickListener(new OnClickListener() {
+		mRbPostcode.setOnClickListener(new OnClickListener() 
+		{
 			@Override
-			public void onClick(View v) {
+			public void onClick(View v) 
+			{
 				onRadioButtonClicked(v);
 			}
 		});
@@ -193,7 +197,8 @@ public class NavigationDrawerHandler implements Observer {
 	
 	// Shamelessly stole this from the internet
 	public static
-	<T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
+	<T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c)
+	{
 	  List<T> list = new ArrayList<T>(c);
 	  java.util.Collections.sort(list);
 	  return list;
@@ -282,7 +287,8 @@ public class NavigationDrawerHandler implements Observer {
 		builder.setTitle("Check your connection");
 		builder.setMessage("An internet connection is required to Sleuth, check your connection and try again.");
 		
-		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+		{
 			@Override
 			public void onClick(DialogInterface dialog, int which) 
 			{
@@ -291,10 +297,11 @@ public class NavigationDrawerHandler implements Observer {
 		});
 		return builder.create();
 	}
-	private void initialiseSleuthButton() {
+	private void initialiseSleuthButton() 
+	{
 		mSleuthButton = (Button)mDrawerLayout.findViewById(R.id.button_sleuth);
-		mSleuthButton.setOnClickListener(new OnClickListener() {
-
+		mSleuthButton.setOnClickListener(new OnClickListener() 
+		{
 			@Override
 			public void onClick(View view) 
 			{
@@ -317,16 +324,20 @@ public class NavigationDrawerHandler implements Observer {
 		});
 	}
 
-	private void initialiseRangeBar() {
+	private void initialiseRangeBar()
+	{
 		mRangeBar = (SeekBar) mDrawerLayout.findViewById(R.id.range_bar);
 		mRangeBarProgress = 1;
-		mRangeBar.setOnTouchListener(new ListView.OnTouchListener() {
+		mRangeBar.setOnTouchListener(new ListView.OnTouchListener()
+		{
 			@SuppressLint("ClickableViewAccessibility")
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
+			public boolean onTouch(View v, MotionEvent event)
+			{
 				int action = event.getAction();
 
-				switch (action) {
+				switch (action) 
+				{
 				case MotionEvent.ACTION_DOWN:
 					v.getParent().requestDisallowInterceptTouchEvent(true);
 					break;
@@ -342,11 +353,10 @@ public class NavigationDrawerHandler implements Observer {
 			}
 		});
 		
-		mRangeBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-
+		mRangeBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener()
+		{
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				mRangeBarProgress = seekBar.getProgress() + 1;
 				String s;
 				s = Integer.toString(mRangeBarProgress);
@@ -358,12 +368,12 @@ public class NavigationDrawerHandler implements Observer {
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
-				// TODO Auto-generated method stub
+				// Do nothing
 			}
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-				// TODO Auto-generated method stub
+				// Do nothing
 			}
 		});
 	}
@@ -410,7 +420,9 @@ public class NavigationDrawerHandler implements Observer {
 		for (int i = 0; i < mAvailableCategories.length; i++)
 		{
 			if (key.equals(mAvailableCategories[i].getId()))
+			{
 				return mAvailableCategories[i].getName();
+			}
 		}
 		
 		return null;

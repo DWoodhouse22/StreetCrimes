@@ -68,7 +68,8 @@ public class SplashScreenActivity extends Activity implements Observer {
 	}
 
 	@Override
-	public void update(Observable observable, Object data) {
+	public void update(Observable observable, Object data)
+	{
 		Notification pData = (Notification)data;
 		
 		// Retrieve the available dates first and use this to get the categories for each date

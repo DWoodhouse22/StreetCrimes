@@ -52,15 +52,18 @@ public class CombinedStreetCrimeData {
 		mCrimeCategoryCount.put(nData.getCategory(), count);
 	}
 	
-	public List<StreetCrimeData> getmCrimes() {
+	public List<StreetCrimeData> getmCrimes() 
+	{
 		return mCrimes;
 	}
 
-	public LatLng getmLocation() {
+	public LatLng getmLocation() 
+	{
 		return mLocation;
 	}
 
-	public String getmLocationName() {
+	public String getmLocationName() 
+	{
 		return mLocationName;
 	}
 	
@@ -74,7 +77,8 @@ public class CombinedStreetCrimeData {
 		return mCrimeCategoryCount.keySet().size() > 1;
 	}
 
-	public View getView() {
+	public View getView() 
+	{
 		View windowLayout = mActivity.getLayoutInflater().inflate(R.layout.map_custom_info_window, null);
 		
 		TextView title = (TextView) windowLayout.findViewById(R.id.info_title);
@@ -97,5 +101,4 @@ public class CombinedStreetCrimeData {
         
 		return windowLayout;
 	}
-
 }

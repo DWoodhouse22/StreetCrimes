@@ -23,7 +23,6 @@ public class GetCategoriesTask extends AsyncTask<Void, Void, String>
 	{
 		mDate = date;
 		mContext = context;
-		Log.i(TAG, mDate);
 	}
 	@Override
 	protected String doInBackground(Void... v) {
@@ -31,7 +30,6 @@ public class GetCategoriesTask extends AsyncTask<Void, Void, String>
 		{
 			String requestURL = "http://data.police.uk/api/crime-categories?date=";
 			requestURL += mDate;
-			Log.i (TAG, requestURL);
 			HttpClient httpClient = new DefaultHttpClient();
 			
 			HttpGet request = new HttpGet();
